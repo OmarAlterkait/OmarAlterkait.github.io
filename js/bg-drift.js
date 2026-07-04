@@ -362,11 +362,11 @@
   }
 
   // ---- Init ----------------------------------------------------------------
-  fetch('assets/bg/bg_event.json')
+  fetch('assets/bg/bg_event.json?v=__BUILD__')
     .then(function (r) { return r.json(); })
     .then(function (m) {
       meta = m;
-      return fetch('assets/bg/bg_event.bin');
+      return fetch('assets/bg/bg_event.bin?v=__BUILD__');
     })
     .then(function (r) { return r.arrayBuffer(); })
     .then(function (buf) {
