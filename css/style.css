@@ -21,8 +21,7 @@ html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 
 body {
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  /* Subtle depth: lighter at the top, darkest near the sensor plane */
-  background: linear-gradient(180deg, #141b26 0%, var(--bg) 40%, #0b0f14 100%);
+  background: var(--bg);
   color: var(--text);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;

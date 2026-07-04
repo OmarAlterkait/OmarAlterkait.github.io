@@ -47,7 +47,7 @@
   var LAND_BLEND = 0.35;     // s, pre-landing ease toward the hit position
   var EMPH_POW = 5.0;        // JAXTPC viewer charge emphasis: de^pow
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
-  var COSMIC_MEAN_S = 32;    // mean seconds between ambient cosmic rays
+  var COSMIC_MEAN_S = 14;    // mean seconds between ambient cosmic rays
   var COSMIC_ALPHA = 0.75;   // cosmics dimmer than clicked events
   var AMBIENT_ALPHA = 0.10;  // medium dust ceiling (pulses go brighter)
   var AMBIENT_DENSITY = 1 / 11000;  // dust points per document px^2
@@ -393,7 +393,7 @@
 
   function scheduleCosmic() {
     // Poisson arrivals, clamped so it never machine-guns or goes silent
-    var delay = Math.min(120, Math.max(8,
+    var delay = Math.min(60, Math.max(4,
       -Math.log(1 - Math.random()) * COSMIC_MEAN_S)) * 1000;
     setTimeout(function () {
       if (!document.hidden) spawnCosmic();
