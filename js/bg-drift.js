@@ -49,8 +49,8 @@
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
   var COSMIC_MEAN_S = 9;    // mean seconds between ambient cosmic rays
   var COSMIC_ALPHA = 0.75;   // cosmics dimmer than clicked events
-  var AMBIENT_ALPHA = 0.11;  // medium dust ceiling (pulses go brighter)
-  var AMBIENT_DENSITY = 1 / 15000;  // dust points per document px^2
+  var AMBIENT_ALPHA = 0.30;  // dot alpha ceiling (original was ~0.10-0.38)
+  var AMBIENT_DENSITY = 1 / 18000;  // dots per viewport px^2 (original value)
 
   // ---- Point shader (document-space math) -----------------------------------
   var VS = [
@@ -153,32 +153,26 @@
     'void main(){ gl_FragColor = vec4(uColor, vA); }',
   ].join('\n');
 
-  // ---- Ambient medium: diffusion wander + upward creep + Ar-39 pulses ------
+  // ---- Ambient: the site's first background, faithfully -------------------
+  // Screen-fixed drifting dots (the original placeholder field), straight
+  // slow paths wrapping at the viewport edges, now with a gentle downward
+  // tendency. No pulses, no wander: just the calm original drift.
   var AVS = [
-    'attribute vec4 aSeed;',       // baseX px, baseY doc px, seed1, seed2
+    'attribute vec4 aSeed;',       // baseX, baseY (viewport px), seed1, seed2
     'uniform vec2 uVp;',
-    'uniform float uScroll;',
     'uniform float uTime;',        // s
-    'uniform float uWrapH;',       // vertical wrap height (page down to plane)
     'uniform float uDpr;',
     'uniform float uAmbA;',
     'varying float vA;',
     'void main(){',
     '  float s1 = aSeed.z, s2 = aSeed.w;',
-    // Constant slow velocity per mote, biased gently downward (the original
-    // placeholder field, calmer, with a nod to the drift direction)
-    '  float vx = (s1 - 0.5) * 8.0;',            // px/s, either way
-    '  float vy = 1.5 + 4.0 * s2;',              // px/s, always down
+    '  float vx = (s1 - 0.5) * 9.0;',            // px/s, either way
+    '  float vy = 0.5 + 3.5 * s2;',              // px/s, gently down
     '  float x = mod(aSeed.x + vx * uTime, uVp.x);',
-    '  float y = mod(aSeed.y + vy * uTime, uWrapH);',
-    // Rare Ar-39 blip: instant on, slow glow-off
-    '  float per = 40.0 + 55.0 * s1;',
-    '  float dtp = (fract(uTime / per + s2) - 0.1) * per;',
-    '  float pulse = smoothstep(0.0, 0.15, dtp) * exp(-dtp * 1.8);',
-    '  float sy = y - uScroll;',
-    '  gl_Position = vec4(x / uVp.x * 2.0 - 1.0, 1.0 - sy / uVp.y * 2.0, 0.0, 1.0);',
-    '  vA = uAmbA * (0.5 + 0.5 * s1) + pulse * 0.28;',
-    '  gl_PointSize = (1.7 + 1.2 * s2 + pulse * 3.0) * uDpr;',
+    '  float y = mod(aSeed.y + vy * uTime, uVp.y);',
+    '  gl_Position = vec4(x / uVp.x * 2.0 - 1.0, 1.0 - y / uVp.y * 2.0, 0.0, 1.0);',
+    '  vA = uAmbA * (0.3 + 0.7 * fract(s1 * 5.7));',
+    '  gl_PointSize = (1.2 + 2.6 * s2) * uDpr;',
     '}',
   ].join('\n');
 
@@ -186,12 +180,12 @@
     'precision mediump float;',
     'varying float vA;',
     'void main(){',
-    // Soft splat: (1-r^2)^2 falloff so motes glow instead of reading as pixels
+    // Crisp dot with an antialiased rim, like the original canvas circles
     '  vec2 d = gl_PointCoord - vec2(0.5);',
-    '  float r2 = dot(d, d) * 4.0;',
-    '  if (r2 > 1.0) discard;',
-    '  float fall = 1.0 - r2;',
-    '  gl_FragColor = vec4(0.43, 0.66, 0.86, vA * fall * fall);',
+    '  float r = length(d);',
+    '  if (r > 0.5) discard;',
+    '  float edge = 1.0 - smoothstep(0.32, 0.5, r);',
+    '  gl_FragColor = vec4(0.43, 0.66, 0.86, vA * edge);',
     '}',
   ].join('\n');
 
@@ -239,12 +233,12 @@
   }
 
   function buildAmbient() {
-    var h = Math.max(plane.farY, window.innerHeight);
-    var n = Math.min(2500, Math.max(150,
-      Math.floor(window.innerWidth * h * AMBIENT_DENSITY)));
+    // Viewport-anchored like the original placeholder field
+    var w = window.innerWidth, h = window.innerHeight;
+    var n = Math.min(400, Math.max(30, Math.floor(w * h * AMBIENT_DENSITY)));
     var v = new Float32Array(n * 4);
     for (var i = 0; i < n; i++) {
-      v[i * 4] = Math.random() * window.innerWidth;
+      v[i * 4] = Math.random() * w;
       v[i * 4 + 1] = Math.random() * h;
       v[i * 4 + 2] = Math.random();
       v[i * 4 + 3] = Math.random();
@@ -330,7 +324,7 @@
 
     aProg = compile(AVS, AFS);
     aLoc.aSeed = gl.getAttribLocation(aProg, 'aSeed');
-    ['uVp', 'uScroll', 'uTime', 'uWrapH', 'uDpr', 'uAmbA'].forEach(function (u) {
+    ['uVp', 'uTime', 'uDpr', 'uAmbA'].forEach(function (u) {
       aLoc[u] = gl.getUniformLocation(aProg, u);
     });
     ambVbo = gl.createBuffer();
@@ -420,9 +414,7 @@
       gl.vertexAttribPointer(aLoc.aSeed, 4, gl.FLOAT, false, 16, 0);
       gl.enableVertexAttribArray(aLoc.aSeed);
       gl.uniform2f(aLoc.uVp, vw, vh);
-      gl.uniform1f(aLoc.uScroll, sc);
       gl.uniform1f(aLoc.uTime, reduceMotion ? 0 : (now - t0Wall) / 1000);
-      gl.uniform1f(aLoc.uWrapH, Math.max(plane.farY, vh));
       gl.uniform1f(aLoc.uDpr, dpr);
       gl.uniform1f(aLoc.uAmbA, AMBIENT_ALPHA);
       gl.drawArrays(gl.POINTS, 0, ambN);
