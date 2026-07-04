@@ -36,7 +36,7 @@
       vx: (Math.random() - 0.5) * MAX_SPEED,
       vy: (Math.random() - 0.5) * MAX_SPEED,
       r: 0.6 + Math.random() * 1.4,
-      a: 0.15 + Math.random() * 0.35,
+      a: 0.10 + Math.random() * 0.28,
     }));
   }
 
@@ -53,7 +53,7 @@
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(79, 209, 255, ${p.a})`;
+      ctx.fillStyle = `rgba(110, 168, 220, ${p.a})`;
       ctx.fill();
     }
 
@@ -70,7 +70,7 @@
     for (const p of particles) {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(79, 209, 255, ${p.a})`;
+      ctx.fillStyle = `rgba(110, 168, 220, ${p.a})`;
       ctx.fill();
     }
   } else {

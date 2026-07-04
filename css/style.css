@@ -4,13 +4,13 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  --bg: #0b1220;
-  --bg-panel: rgba(17, 27, 46, 0.72);
-  --bg-card: rgba(22, 34, 56, 0.85);
-  --text: #e6edf7;
-  --text-dim: #9fb0c8;
-  --accent: #4fd1ff;
-  --accent-warm: #ffb454;
+  --bg: #0f1419;
+  --bg-panel: rgba(22, 28, 36, 0.72);
+  --bg-card: rgba(23, 29, 38, 0.88);
+  --text: #e8eaed;
+  --text-dim: #98a2b3;
+  --accent: #6ea8dc;
+  --accent-warm: #c9a45c;
   --border: rgba(255, 255, 255, 0.08);
   --maxw: 860px;
 }
@@ -45,7 +45,7 @@ a:hover { text-decoration: underline; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 10;
-  background: rgba(11, 18, 32, 0.82);
+  background: rgba(15, 20, 25, 0.85);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
@@ -93,8 +93,8 @@ a:hover { text-decoration: underline; }
   height: 190px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--accent);
-  box-shadow: 0 0 40px rgba(79, 209, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
 }
 
@@ -160,10 +160,10 @@ a:hover { text-decoration: underline; }
 .section h2::after {
   content: "";
   display: block;
-  width: 48px;
-  height: 3px;
+  width: 40px;
+  height: 2px;
   margin-top: 0.5rem;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  background: var(--accent);
   border-radius: 2px;
 }
 
@@ -184,7 +184,7 @@ a:hover { text-decoration: underline; }
 }
 
 .card:hover {
-  border-color: rgba(79, 209, 255, 0.45);
+  border-color: rgba(110, 168, 220, 0.4);
   transform: translateY(-2px);
 }
 
