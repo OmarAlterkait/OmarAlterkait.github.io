@@ -35,6 +35,120 @@
    "n": 25000,
    "event": 80,
    "interaction": 2
+  },
+  {
+   "file": "bg_event_6.bin",
+   "n": 25000,
+   "event": 92,
+   "interaction": 1
+  },
+  {
+   "file": "bg_event_7.bin",
+   "n": 25000,
+   "event": 25,
+   "interaction": 0
+  },
+  {
+   "file": "bg_event_8.bin",
+   "n": 25000,
+   "event": 18,
+   "interaction": 4
+  },
+  {
+   "file": "bg_event_9.bin",
+   "n": 25000,
+   "event": 162,
+   "interaction": 8
+  },
+  {
+   "file": "bg_event_10.bin",
+   "n": 25000,
+   "event": 145,
+   "interaction": 10
+  },
+  {
+   "file": "bg_event_11.bin",
+   "n": 25000,
+   "event": 135,
+   "interaction": 1
+  },
+  {
+   "file": "bg_event_12.bin",
+   "n": 25000,
+   "event": 61,
+   "interaction": 2
+  },
+  {
+   "file": "bg_event_13.bin",
+   "n": 25000,
+   "event": 58,
+   "interaction": 2
+  },
+  {
+   "file": "bg_event_14.bin",
+   "n": 25000,
+   "event": 95,
+   "interaction": 3
+  },
+  {
+   "file": "bg_event_15.bin",
+   "n": 25000,
+   "event": 110,
+   "interaction": 3
+  },
+  {
+   "file": "bg_event_16.bin",
+   "n": 25000,
+   "event": 181,
+   "interaction": 1
+  },
+  {
+   "file": "bg_event_17.bin",
+   "n": 19696,
+   "event": 136,
+   "interaction": 10
+  },
+  {
+   "file": "bg_event_18.bin",
+   "n": 25000,
+   "event": 136,
+   "interaction": 1
+  },
+  {
+   "file": "bg_event_19.bin",
+   "n": 25000,
+   "event": 195,
+   "interaction": 0
+  },
+  {
+   "file": "bg_event_20.bin",
+   "n": 25000,
+   "event": 3,
+   "interaction": 8
+  },
+  {
+   "file": "bg_event_21.bin",
+   "n": 25000,
+   "event": 19,
+   "interaction": 6
+  },
+  {
+   "file": "bg_event_22.bin",
+   "n": 25000,
+   "event": 50,
+   "interaction": 0
+  },
+  {
+   "file": "bg_event_23.bin",
+   "n": 25000,
+   "event": 34,
+   "interaction": 2
+  },
+  {
+   "file": "bg_event_24.bin",
+   "n": 25000,
+   "event": 63,
+   "interaction": 6
   }
  ],
  "source": "JAXTPC doraemon pixel_test_00_00_02 run_0027575715",

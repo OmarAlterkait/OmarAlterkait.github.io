@@ -388,9 +388,15 @@
       return loadEvent(0);
     })
     .then(function () {
-      // Prefetch the rest of the pool quietly after first paint
-      for (var i = 1; i < manifest.events.length; i++) {
-        setTimeout(loadEvent.bind(null, i), 1200 * i);
+      // Prefetch the rest of the pool quietly after first paint, unless the
+      // visitor is on a data-saver or very slow connection (they still get
+      // event 0 on every click).
+      var conn = navigator.connection || {};
+      var frugal = conn.saveData || /2g/.test(conn.effectiveType || '');
+      if (!frugal) {
+        for (var i = 1; i < manifest.events.length; i++) {
+          setTimeout(loadEvent.bind(null, i), 800 * i);
+        }
       }
 
       if (reduceMotion) return;    // static plane only
