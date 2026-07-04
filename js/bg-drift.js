@@ -49,7 +49,7 @@
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
   var COSMIC_MEAN_S = 9;    // mean seconds between ambient cosmic rays
   var COSMIC_ALPHA = 0.75;   // cosmics dimmer than clicked events
-  var AMBIENT_ALPHA = 0.14;  // medium dust ceiling (pulses go brighter)
+  var AMBIENT_ALPHA = 0.11;  // medium dust ceiling (pulses go brighter)
   var AMBIENT_DENSITY = 1 / 15000;  // dust points per document px^2
 
   // ---- Point shader (document-space math) -----------------------------------
@@ -159,22 +159,26 @@
     'uniform vec2 uVp;',
     'uniform float uScroll;',
     'uniform float uTime;',        // s
+    'uniform float uWrapH;',       // vertical wrap height (page down to plane)
     'uniform float uDpr;',
     'uniform float uAmbA;',
     'varying float vA;',
     'void main(){',
     '  float s1 = aSeed.z, s2 = aSeed.w;',
-    '  float wob = 6.0 + 9.0 * s2;',
-    '  float x = aSeed.x + wob * sin(uTime * (0.05 + 0.08 * s1) + s1 * 6.2831);',
-    '  float y = aSeed.y + wob * 0.6 * cos(uTime * (0.04 + 0.07 * s2) + s2 * 6.2831);',
+    // Constant slow velocity per mote, biased gently downward (the original
+    // placeholder field, calmer, with a nod to the drift direction)
+    '  float vx = (s1 - 0.5) * 8.0;',            // px/s, either way
+    '  float vy = 1.5 + 4.0 * s2;',              // px/s, always down
+    '  float x = mod(aSeed.x + vx * uTime, uVp.x);',
+    '  float y = mod(aSeed.y + vy * uTime, uWrapH);',
     // Rare Ar-39 blip: instant on, slow glow-off
     '  float per = 40.0 + 55.0 * s1;',
     '  float dtp = (fract(uTime / per + s2) - 0.1) * per;',
     '  float pulse = smoothstep(0.0, 0.15, dtp) * exp(-dtp * 1.8);',
     '  float sy = y - uScroll;',
     '  gl_Position = vec4(x / uVp.x * 2.0 - 1.0, 1.0 - sy / uVp.y * 2.0, 0.0, 1.0);',
-    '  vA = uAmbA * (0.5 + 0.5 * s1) + pulse * 0.35;',
-    '  gl_PointSize = (2.0 + 1.4 * s2 + pulse * 3.5) * uDpr;',
+    '  vA = uAmbA * (0.5 + 0.5 * s1) + pulse * 0.28;',
+    '  gl_PointSize = (1.7 + 1.2 * s2 + pulse * 3.0) * uDpr;',
     '}',
   ].join('\n');
 
@@ -187,7 +191,7 @@
     '  float r2 = dot(d, d) * 4.0;',
     '  if (r2 > 1.0) discard;',
     '  float fall = 1.0 - r2;',
-    '  gl_FragColor = vec4(0.55, 0.68, 0.80, vA * fall * fall);',
+    '  gl_FragColor = vec4(0.43, 0.66, 0.86, vA * fall * fall);',
     '}',
   ].join('\n');
 
@@ -326,7 +330,7 @@
 
     aProg = compile(AVS, AFS);
     aLoc.aSeed = gl.getAttribLocation(aProg, 'aSeed');
-    ['uVp', 'uScroll', 'uTime', 'uDpr', 'uAmbA'].forEach(function (u) {
+    ['uVp', 'uScroll', 'uTime', 'uWrapH', 'uDpr', 'uAmbA'].forEach(function (u) {
       aLoc[u] = gl.getUniformLocation(aProg, u);
     });
     ambVbo = gl.createBuffer();
@@ -418,6 +422,7 @@
       gl.uniform2f(aLoc.uVp, vw, vh);
       gl.uniform1f(aLoc.uScroll, sc);
       gl.uniform1f(aLoc.uTime, reduceMotion ? 0 : (now - t0Wall) / 1000);
+      gl.uniform1f(aLoc.uWrapH, Math.max(plane.farY, vh));
       gl.uniform1f(aLoc.uDpr, dpr);
       gl.uniform1f(aLoc.uAmbA, AMBIENT_ALPHA);
       gl.drawArrays(gl.POINTS, 0, ambN);
