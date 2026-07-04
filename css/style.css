@@ -143,6 +143,16 @@ a:hover { text-decoration: underline; }
 
 .icon-row a:hover svg { fill: var(--accent); }
 
+.icon-cv {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--text-dim);
+  transition: color 0.2s;
+}
+
+.icon-row a:hover .icon-cv { color: var(--accent); }
+
 /* --- Sections ------------------------------------------------------------- */
 
 .section {
@@ -236,6 +246,11 @@ a:hover { text-decoration: underline; }
 }
 .pub-link:hover { border-color: var(--accent); text-decoration: none; }
 
+.section-note {
+  margin-top: 1.3rem;
+  font-size: 0.92rem;
+}
+
 /* --- News ------------------------------------------------------------------- */
 
 .news-list { list-style: none; }
@@ -259,6 +274,8 @@ a:hover { text-decoration: underline; }
   color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
+
+.news-text { flex: 1; }
 
 /* --- Contact page -------------------------------------------------------------- */
 
