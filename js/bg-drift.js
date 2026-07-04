@@ -37,12 +37,16 @@
   // ---- Tunables -----------------------------------------------------------
   var CLOUD_HALF_W = 0.30;   // cloud half-width, fraction of min(vw, vh)
   var SPEED = 260;           // drift speed, CSS px / s
-  var GLOBAL_ALPHA = 0.55;   // overall subtlety dial
-  var POINT_SIZE = 2.2;      // in-flight point size at dpr=1
+  var GLOBAL_ALPHA = 0.60;   // overall subtlety dial
+  var POINT_SIZE = 2.4;      // in-flight point size at dpr=1
   var HIT_SIZE = 1.8;        // landed point size at dpr=1
-  var PLANE_FADE = 7.0;      // s, landed glow lifetime
+  var PLANE_FADE = 4.5;      // s, landed glow lifetime
   var MAX_LIVE = 3;
   var PLANE_FAR_SCALE = 0.55;   // far edge width / near edge width
+  var DEPTH_SPAN = 0.40;     // cloud depth extent as fraction of plane depth
+  var LAND_BLEND = 0.35;     // s, pre-landing ease toward the hit position
+  var EMPH_POW = 5.0;        // JAXTPC viewer charge emphasis: de^pow
+  var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
   var PALETTE = [
     [0.43, 0.66, 0.86], [0.79, 0.64, 0.36], [0.62, 0.71, 0.66],
     [0.73, 0.63, 0.85], [0.85, 0.54, 0.54], [0.54, 0.77, 0.85],
@@ -69,27 +73,41 @@
     'uniform float uHitSize;',
     'uniform float uPlaneFade;',
     'uniform float uAlpha;',
+    'uniform float uDepthOff;',    // per-click vertex depth, 0 far .. 1 near
+    'uniform float uDepthSpan;',
+    'uniform float uBlend;',       // s, pre-landing position ease
+    'uniform float uEmphPow;',
+    'uniform float uEmphAmt;',
+    'uniform float uPersp;',       // per-click perspective size factor
     'uniform vec3 uPal[9];',
     'varying vec3 vColor;',
     'varying float vA;',
     'void main(){',
     '  float x0 = uOrigin.x + aPos.x * uScalePx;',
     '  float y0 = uOrigin.y + aPos.y * uScalePx;',
-    '  float yLand = mix(uFarY, uNearY, aDepth);',
+    '  float effD = clamp(uDepthOff + (aDepth - 0.5) * uDepthSpan, 0.0, 1.0);',
+    '  float yLand = mix(uFarY, uNearY, effD);',
     '  float tArr = max(yLand - y0, 0.0) / uSpeed;',
     '  float arrived = step(tArr, uTime);',
     '  float y = y0 + min(uTime, tArr) * uSpeed;',
-    '  float xLand = uCx + (x0 - uCx) * mix(uFarScale, 1.0, aDepth);',
-    '  float x = mix(x0, xLand, arrived);',
-    '  float aFly = 0.25 + 0.75 * aDe;',
-    '  float decay = 1.0 - clamp((uTime - tArr) / uPlaneFade, 0.0, 1.0);',
-    '  float alpha = mix(aFly, aFly * decay, arrived) * uAlpha;',
+    '  float xLand = uCx + (x0 - uCx) * mix(uFarScale, 1.0, effD);',
+    '  float pre = clamp((uTime - tArr) / uBlend + 1.0, 0.0, 1.0);',
+    '  pre = pre * pre * (3.0 - 2.0 * pre);',
+    '  float x = mix(x0, xLand, pre);',
+    '  float emph = pow(clamp(aDe, 0.001, 1.0), uEmphPow);',
+    '  float eF = mix(1.0, emph, uEmphAmt);',
+    '  float aFly = 0.85 * max(eF, 0.03);',
+    '  float dt = uTime - tArr;',
+    '  float d1 = 1.0 - clamp(dt / uPlaneFade, 0.0, 1.0);',
+    '  float flash = 1.0 + 0.6 * exp(-max(dt, 0.0) * 5.0);',
+    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha;',
     '  vColor = uPal[int(min(aSlot, 8.0))];',
     '  vA = alpha;',
     '  float sy = y - uScroll;',
     '  vec2 clip = vec2(x / uVp.x * 2.0 - 1.0, 1.0 - sy / uVp.y * 2.0);',
     '  gl_Position = vec4(clip, 0.0, 1.0);',
-    '  float sz = mix(uPtSize * (0.7 + 0.9 * aDe), uHitSize, arrived);',
+    '  float szF = uPtSize * mix(1.0, max(eF, 0.2), uEmphAmt);',
+    '  float sz = mix(szF, uHitSize, pre) * uPersp;',
     '  gl_PointSize = sz * max(sign(alpha), 0.0);',
     '}',
   ].join('\n');
@@ -223,7 +241,8 @@
     });
     ['uVp', 'uScroll', 'uOrigin', 'uScalePx', 'uSpeed', 'uTime', 'uNearY',
      'uFarY', 'uCx', 'uFarScale', 'uPtSize', 'uHitSize', 'uPlaneFade',
-     'uAlpha'].forEach(function (u) {
+     'uAlpha', 'uDepthOff', 'uDepthSpan', 'uBlend', 'uEmphPow', 'uEmphAmt',
+     'uPersp'].forEach(function (u) {
       loc[u] = gl.getUniformLocation(prog, u);
     });
     loc.uPal = gl.getUniformLocation(prog, 'uPal') ||
@@ -252,10 +271,15 @@
     var ox = clientX;
     measurePlane();
     if (oy > plane.farY - 120) return;   // no spawns on/below the plane
-    var scalePx = Math.min(window.innerWidth, window.innerHeight) * CLOUD_HALF_W;
+    // Random vertex depth per click: deeper clouds render smaller and land
+    // nearer the far edge of the plane.
+    var depthOff = 0.12 + 0.76 * Math.random();
+    var persp = PLANE_FAR_SCALE + (1 - PLANE_FAR_SCALE) * depthOff;
+    var scalePx = Math.min(window.innerWidth, window.innerHeight) * CLOUD_HALF_W * persp;
     var tEnd = (plane.nearY - oy + scalePx) / SPEED + PLANE_FADE + 0.5;
     if (live.length >= MAX_LIVE) live.shift();
-    live.push({ ox: ox, oy: oy, t0: performance.now(), scalePx: scalePx, tEnd: tEnd });
+    live.push({ ox: ox, oy: oy, t0: performance.now(), scalePx: scalePx,
+                depthOff: depthOff, persp: persp, tEnd: tEnd });
     start();
   }
 
@@ -304,6 +328,10 @@
     gl.uniform1f(loc.uHitSize, HIT_SIZE * dpr);
     gl.uniform1f(loc.uPlaneFade, PLANE_FADE);
     gl.uniform1f(loc.uAlpha, GLOBAL_ALPHA);
+    gl.uniform1f(loc.uDepthSpan, DEPTH_SPAN);
+    gl.uniform1f(loc.uBlend, LAND_BLEND);
+    gl.uniform1f(loc.uEmphPow, EMPH_POW);
+    gl.uniform1f(loc.uEmphAmt, EMPH_AMT);
 
     for (var j = live.length - 1; j >= 0; j--) {
       var inst = live[j];
@@ -312,6 +340,8 @@
       gl.uniform2f(loc.uOrigin, inst.ox, inst.oy);
       gl.uniform1f(loc.uScalePx, inst.scalePx);
       gl.uniform1f(loc.uTime, t);
+      gl.uniform1f(loc.uDepthOff, inst.depthOff);
+      gl.uniform1f(loc.uPersp, inst.persp);
       gl.drawArrays(gl.POINTS, 0, nPts);
     }
   }
