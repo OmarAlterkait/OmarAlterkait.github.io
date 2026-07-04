@@ -171,8 +171,8 @@
     '  float x = mod(aSeed.x + vx * uTime, uVp.x);',
     '  float y = mod(aSeed.y + vy * uTime, uVp.y);',
     '  gl_Position = vec4(x / uVp.x * 2.0 - 1.0, 1.0 - y / uVp.y * 2.0, 0.0, 1.0);',
-    '  vA = uAmbA * (0.3 + 0.7 * fract(s1 * 5.7));',
-    '  gl_PointSize = (1.2 + 2.6 * s2) * uDpr;',
+    '  vA = uAmbA * (0.25 + 0.75 * s2);',
+    '  gl_PointSize = (1.2 + 3.4 * s2 * s2) * uDpr;',
     '}',
   ].join('\n');
 
