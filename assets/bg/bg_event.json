@@ -6,5 +6,5 @@
   "tiltDeg": 18.0,
   "pyMin": -0.5468050368825259,
   "pyMax": 0.5979247259037955,
-  "nSlots": 8
+  "colormap": "hsl(track-golden-ratio-hash, 0.78, 0.55)"
 }

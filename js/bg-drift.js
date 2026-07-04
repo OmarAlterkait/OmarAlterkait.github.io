@@ -41,23 +41,18 @@
   var POINT_SIZE = 2.4;      // in-flight point size at dpr=1
   var HIT_SIZE = 1.8;        // landed point size at dpr=1
   var PLANE_FADE = 4.5;      // s, landed glow lifetime
-  var MAX_LIVE = 3;
+  var MAX_LIVE = 16;
   var PLANE_FAR_SCALE = 0.55;   // far edge width / near edge width
   var DEPTH_SPAN = 0.40;     // cloud depth extent as fraction of plane depth
   var LAND_BLEND = 0.35;     // s, pre-landing ease toward the hit position
   var EMPH_POW = 5.0;        // JAXTPC viewer charge emphasis: de^pow
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
-  var PALETTE = [
-    [0.43, 0.66, 0.86], [0.79, 0.64, 0.36], [0.62, 0.71, 0.66],
-    [0.73, 0.63, 0.85], [0.85, 0.54, 0.54], [0.54, 0.77, 0.85],
-    [0.77, 0.85, 0.54], [0.85, 0.71, 0.54], [0.42, 0.47, 0.53],
-  ];
 
   // ---- Point shader (document-space math) -----------------------------------
   var VS = [
     'attribute vec2 aPos;',
     'attribute float aDepth;',     // 0 far .. 1 near
-    'attribute float aSlot;',
+    'attribute float aHue;',       // track hue (viewer golden-ratio hash)
     'attribute float aDe;',
     'uniform vec2 uVp;',           // viewport CSS px
     'uniform float uScroll;',      // window scrollY
@@ -79,7 +74,6 @@
     'uniform float uEmphPow;',
     'uniform float uEmphAmt;',
     'uniform float uPersp;',       // per-click perspective size factor
-    'uniform vec3 uPal[9];',
     'varying vec3 vColor;',
     'varying float vA;',
     'void main(){',
@@ -87,6 +81,7 @@
     '  float y0 = uOrigin.y + aPos.y * uScalePx;',
     '  float effD = clamp(uDepthOff + (aDepth - 0.5) * uDepthSpan, 0.0, 1.0);',
     '  float yLand = mix(uFarY, uNearY, effD);',
+    '  float valid = step(y0, yLand);',   // spawned past its landing surface: dead
     '  float tArr = max(yLand - y0, 0.0) / uSpeed;',
     '  float arrived = step(tArr, uTime);',
     '  float y = y0 + min(uTime, tArr) * uSpeed;',
@@ -100,8 +95,10 @@
     '  float dt = uTime - tArr;',
     '  float d1 = 1.0 - clamp(dt / uPlaneFade, 0.0, 1.0);',
     '  float flash = 1.0 + 0.6 * exp(-max(dt, 0.0) * 5.0);',
-    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha;',
-    '  vColor = uPal[int(min(aSlot, 8.0))];',
+    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha * valid;',
+    // HSL(hue, 0.78, 0.55): exact port of the viewer's hsl2rgb track colors
+    '  vec3 q = clamp(abs(mod(aHue * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);',
+    '  vColor = 0.55 + 0.702 * (q - 0.5);',
     '  vA = alpha;',
     '  float sy = y - uScroll;',
     '  vec2 clip = vec2(x / uVp.x * 2.0 - 1.0, 1.0 - sy / uVp.y * 2.0);',
@@ -236,7 +233,7 @@
   function setupGL(buf) {
     prog = compile(VS, FS);
     pProg = compile(PVS, PFS);
-    ['aPos', 'aDepth', 'aSlot', 'aDe'].forEach(function (a) {
+    ['aPos', 'aDepth', 'aHue', 'aDe'].forEach(function (a) {
       loc[a] = gl.getAttribLocation(prog, a);
     });
     ['uVp', 'uScroll', 'uOrigin', 'uScalePx', 'uSpeed', 'uTime', 'uNearY',
@@ -245,8 +242,6 @@
      'uPersp'].forEach(function (u) {
       loc[u] = gl.getUniformLocation(prog, u);
     });
-    loc.uPal = gl.getUniformLocation(prog, 'uPal') ||
-               gl.getUniformLocation(prog, 'uPal[0]');
     pLoc.aXY = gl.getAttribLocation(pProg, 'aXY');
     pLoc.aA = gl.getAttribLocation(pProg, 'aA');
     ['uVp', 'uScroll', 'uColor'].forEach(function (u) {
@@ -270,7 +265,7 @@
     var oy = clientY + window.scrollY;
     var ox = clientX;
     measurePlane();
-    if (oy > plane.farY - 120) return;   // no spawns on/below the plane
+    if (oy > plane.nearY) return;   // no spawns below the plane's near edge
     // Random vertex depth per click: deeper clouds render smaller and land
     // nearer the far edge of the plane.
     var depthOff = 0.12 + 0.76 * Math.random();
@@ -308,15 +303,12 @@
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
     gl.vertexAttribPointer(loc.aPos, 2, gl.SHORT, true, 8, 0);
     gl.vertexAttribPointer(loc.aDepth, 1, gl.UNSIGNED_SHORT, true, 8, 4);
-    gl.vertexAttribPointer(loc.aSlot, 1, gl.UNSIGNED_BYTE, false, 8, 6);
+    gl.vertexAttribPointer(loc.aHue, 1, gl.UNSIGNED_BYTE, true, 8, 6);
     gl.vertexAttribPointer(loc.aDe, 1, gl.UNSIGNED_BYTE, true, 8, 7);
     gl.enableVertexAttribArray(loc.aPos);
     gl.enableVertexAttribArray(loc.aDepth);
-    gl.enableVertexAttribArray(loc.aSlot);
+    gl.enableVertexAttribArray(loc.aHue);
     gl.enableVertexAttribArray(loc.aDe);
-    var pal = [];
-    for (var k = 0; k < 9; k++) pal = pal.concat(PALETTE[k]);
-    gl.uniform3fv(loc.uPal, pal);
     gl.uniform2f(loc.uVp, vw, vh);
     gl.uniform1f(loc.uScroll, sc);
     gl.uniform1f(loc.uSpeed, SPEED);
