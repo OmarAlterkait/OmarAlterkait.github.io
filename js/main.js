@@ -1,3 +1,20 @@
+/* Mobile nav: hamburger toggles the dropdown; any link click closes it. */
+(function () {
+  const nav = document.querySelector('.nav');
+  const toggle = document.querySelector('.nav-toggle');
+  if (!nav || !toggle) return;
+  toggle.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  nav.querySelectorAll('.nav-links a').forEach((a) => {
+    a.addEventListener('click', () => {
+      nav.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
+
 /* ---------------------------------------------------------------------------
    Background visualization (PLACEHOLDER).
    A subtle drifting particle field so the site has depth while we design the
