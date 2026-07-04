@@ -23,21 +23,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Stamp the commit into the page so the live site is verifiable
+      - name: Stamp commit SHA into index.html
+        run: printf '\n<!-- deployed: %s -->\n' "$GITHUB_SHA" >> index.html
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages (attempt 1)
         id: deploy1
         uses: actions/deploy-pages@v4
         continue-on-error: true
 
-      - name: Wait before retry
+      - name: Wait 60s before attempt 2
         if: steps.deploy1.outcome == 'failure'
-        run: sleep 30
+        run: sleep 60
 
-      - name: Deploy to GitHub Pages (retry)
+      - name: Deploy to GitHub Pages (attempt 2)
+        id: deploy2
         if: steps.deploy1.outcome == 'failure'
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Wait 180s before attempt 3
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        run: sleep 180
+
+      - name: Deploy to GitHub Pages (attempt 3, final)
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+
+  # Independently confirm the live site actually serves this commit
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Poll live site for this commit's stamp
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsSL "https://omaralterkait.github.io/?v=$GITHUB_SHA" | grep -q "deployed: $GITHUB_SHA"; then
+              echo "Verified: live site serves $GITHUB_SHA"
+              exit 0
+            fi
+            echo "Attempt $i: not yet serving $GITHUB_SHA"
+            sleep 20
+          done
+          echo "ERROR: live site never served $GITHUB_SHA within 10 minutes"
+          exit 1
