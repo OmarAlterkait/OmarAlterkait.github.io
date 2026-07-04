@@ -1,0 +1,42 @@
+{
+ "events": [
+  {
+   "file": "bg_event_0.bin",
+   "n": 25000,
+   "event": 43,
+   "interaction": 6
+  },
+  {
+   "file": "bg_event_1.bin",
+   "n": 25000,
+   "event": 156,
+   "interaction": 4
+  },
+  {
+   "file": "bg_event_2.bin",
+   "n": 25000,
+   "event": 22,
+   "interaction": 7
+  },
+  {
+   "file": "bg_event_3.bin",
+   "n": 25000,
+   "event": 125,
+   "interaction": 5
+  },
+  {
+   "file": "bg_event_4.bin",
+   "n": 25000,
+   "event": 10,
+   "interaction": 1
+  },
+  {
+   "file": "bg_event_5.bin",
+   "n": 25000,
+   "event": 80,
+   "interaction": 2
+  }
+ ],
+ "source": "JAXTPC doraemon pixel_test_00_00_02 run_0027575715",
+ "colormap": "hsl(track-golden-ratio-hash, 0.78, 0.55)"
+}

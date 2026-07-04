@@ -98,8 +98,8 @@
     '  float dt = uTime - tArr;',
     '  float d1 = 1.0 - clamp(dt / uPlaneFade, 0.0, 1.0);',
     '  float flash = 1.0 + 0.6 * exp(-max(dt, 0.0) * 5.0);',
-    // Lands inside the plane: flash + decay. Outside: insta-dead on arrival.
-    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8) * inside, arrived) * uAlpha * valid;',
+    // Outside the detector footprint: never visible at all.
+    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha * valid * inside;',
     // HSL(hue, 0.78, 0.55): exact port of the viewer's hsl2rgb track colors
     '  vec3 q = clamp(abs(mod(aHue * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);',
     '  vColor = 0.55 + 0.702 * (q - 0.5);',
@@ -166,12 +166,13 @@
   }
 
   // ---- State ---------------------------------------------------------------
-  var meta = null, nPts = 0;
-  var prog = null, pProg = null, vbo = null, planeVbo = null;
+  var manifest = null;
+  var events = [];   // per pool entry: {vbo, n} once loaded
+  var prog = null, pProg = null, planeVbo = null;
   var loc = {}, pLoc = {};
   var planeVerts = null, planeLineStart = 0, planeLineCount = 0;
-  var plane = { nearY: 0, farY: 0, cx: 0 };
-  var live = [];   // {ox, oy, t0, scalePx, tEnd}
+  var plane = { nearY: 0, farY: 0, cx: 0, nearHalf: 0 };
+  var live = [];   // {ev, ox, oy, t0, scalePx, depthOff, persp, tEnd}
   var running = false;
   var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
@@ -234,7 +235,7 @@
     }
   }
 
-  function setupGL(buf) {
+  function setupGL() {
     prog = compile(VS, FS);
     pProg = compile(PVS, PFS);
     ['aPos', 'aDepth', 'aHue', 'aDe'].forEach(function (a) {
@@ -252,10 +253,6 @@
       pLoc[u] = gl.getUniformLocation(pProg, u);
     });
 
-    vbo = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW);
-
     planeVbo = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, planeVbo);
     gl.bufferData(gl.ARRAY_BUFFER, planeVerts, gl.DYNAMIC_DRAW);
@@ -270,6 +267,11 @@
     var ox = clientX;
     measurePlane();
     if (oy > plane.nearY) return;   // no spawns below the plane's near edge
+    // Random event from whatever part of the pool has loaded so far
+    var avail = [];
+    for (var i = 0; i < events.length; i++) if (events[i]) avail.push(i);
+    if (!avail.length) return;
+    var evIdx = avail[Math.floor(Math.random() * avail.length)];
     // Random vertex depth per click: deeper clouds render smaller and land
     // nearer the far edge of the plane.
     var depthOff = 0.12 + 0.76 * Math.random();
@@ -277,7 +279,7 @@
     var scalePx = Math.min(window.innerWidth, window.innerHeight) * CLOUD_HALF_W * persp;
     var tEnd = (plane.nearY - oy + scalePx) / SPEED + PLANE_FADE + 0.5;
     if (live.length >= MAX_LIVE) live.shift();
-    live.push({ ox: ox, oy: oy, t0: performance.now(), scalePx: scalePx,
+    live.push({ ev: evIdx, ox: ox, oy: oy, t0: performance.now(), scalePx: scalePx,
                 depthOff: depthOff, persp: persp, tEnd: tEnd });
     start();
   }
@@ -304,15 +306,6 @@
     // Interactions
     if (live.length === 0) return;
     gl.useProgram(prog);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.vertexAttribPointer(loc.aPos, 2, gl.SHORT, true, 8, 0);
-    gl.vertexAttribPointer(loc.aDepth, 1, gl.UNSIGNED_SHORT, true, 8, 4);
-    gl.vertexAttribPointer(loc.aHue, 1, gl.UNSIGNED_BYTE, true, 8, 6);
-    gl.vertexAttribPointer(loc.aDe, 1, gl.UNSIGNED_BYTE, true, 8, 7);
-    gl.enableVertexAttribArray(loc.aPos);
-    gl.enableVertexAttribArray(loc.aDepth);
-    gl.enableVertexAttribArray(loc.aHue);
-    gl.enableVertexAttribArray(loc.aDe);
     gl.uniform2f(loc.uVp, vw, vh);
     gl.uniform1f(loc.uScroll, sc);
     gl.uniform1f(loc.uSpeed, SPEED);
@@ -332,14 +325,24 @@
 
     for (var j = live.length - 1; j >= 0; j--) {
       var inst = live[j];
+      var ev = events[inst.ev];
       var t = (now - inst.t0) / 1000;
-      if (t > inst.tEnd) { live.splice(j, 1); continue; }
+      if (!ev || t > inst.tEnd) { live.splice(j, 1); continue; }
+      gl.bindBuffer(gl.ARRAY_BUFFER, ev.vbo);
+      gl.vertexAttribPointer(loc.aPos, 2, gl.SHORT, true, 8, 0);
+      gl.vertexAttribPointer(loc.aDepth, 1, gl.UNSIGNED_SHORT, true, 8, 4);
+      gl.vertexAttribPointer(loc.aHue, 1, gl.UNSIGNED_BYTE, true, 8, 6);
+      gl.vertexAttribPointer(loc.aDe, 1, gl.UNSIGNED_BYTE, true, 8, 7);
+      gl.enableVertexAttribArray(loc.aPos);
+      gl.enableVertexAttribArray(loc.aDepth);
+      gl.enableVertexAttribArray(loc.aHue);
+      gl.enableVertexAttribArray(loc.aDe);
       gl.uniform2f(loc.uOrigin, inst.ox, inst.oy);
       gl.uniform1f(loc.uScalePx, inst.scalePx);
       gl.uniform1f(loc.uTime, t);
       gl.uniform1f(loc.uDepthOff, inst.depthOff);
       gl.uniform1f(loc.uPersp, inst.persp);
-      gl.drawArrays(gl.POINTS, 0, nPts);
+      gl.drawArrays(gl.POINTS, 0, ev.n);
     }
   }
 
@@ -359,21 +362,36 @@
   }
 
   // ---- Init ----------------------------------------------------------------
-  fetch('assets/bg/bg_event.json?v=__BUILD__')
+  function loadEvent(i) {
+    var f = manifest.events[i].file;
+    return fetch('assets/bg/' + f + '?v=__BUILD__')
+      .then(function (r) { return r.arrayBuffer(); })
+      .then(function (buf) {
+        var b = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, b);
+        gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW);
+        events[i] = { vbo: b, n: manifest.events[i].n };
+      });
+  }
+
+  fetch('assets/bg/bg_events.json?v=__BUILD__')
     .then(function (r) { return r.json(); })
     .then(function (m) {
-      meta = m;
-      return fetch('assets/bg/bg_event.bin?v=__BUILD__');
-    })
-    .then(function (r) { return r.arrayBuffer(); })
-    .then(function (buf) {
-      nPts = meta.n;
-      setupGL(buf);
+      manifest = m;
+      events = new Array(m.events.length);
+      setupGL();
       window.addEventListener('resize', resize);
       window.addEventListener('scroll', function () {
         if (!running) paint();     // keep the static plane glued to the page
       }, { passive: true });
       resize();
+      return loadEvent(0);
+    })
+    .then(function () {
+      // Prefetch the rest of the pool quietly after first paint
+      for (var i = 1; i < manifest.events.length; i++) {
+        setTimeout(loadEvent.bind(null, i), 1200 * i);
+      }
 
       if (reduceMotion) return;    // static plane only
 

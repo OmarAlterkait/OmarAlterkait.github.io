@@ -123,6 +123,11 @@ a:hover { text-decoration: underline; }
   align-items: center;
   gap: 2.5rem;
   flex-wrap: wrap;
+  background: rgba(15, 20, 25, 0.88);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  padding: 2.6rem 2.4rem;
 }
 
 .headshot {
@@ -212,8 +217,12 @@ a:hover { text-decoration: underline; }
 
 .section {
   max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 3.5rem 1.25rem;
+  margin: 0 auto 1.8rem;
+  padding: 2.6rem 2.2rem;
+  background: rgba(15, 20, 25, 0.88);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
 }
 
 .section h2 {
@@ -419,13 +428,15 @@ a:hover { text-decoration: underline; }
   text-align: center;
   color: var(--text-dim);
   font-size: 0.92rem;
+  background: rgba(15, 20, 25, 0.88);
 }
 
 /* --- Small screens ------------------------------------------------------------ */
 
 @media (max-width: 640px) {
   .hero { padding-top: 6rem; min-height: auto; }
-  .hero-inner { flex-direction: column; text-align: center; }
+  .hero-inner { flex-direction: column; text-align: center; padding: 1.8rem 1.2rem; }
+  .section { padding: 1.8rem 1.2rem; }
   .hero-text h1 { font-size: 2rem; }
   .icon-row { justify-content: center; }
   .hero-tagline { margin-left: auto; margin-right: auto; }
