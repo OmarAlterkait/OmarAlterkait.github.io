@@ -403,6 +403,14 @@ a:hover { text-decoration: underline; }
 
 .contact-block p { font-size: 0.95rem; line-height: 1.9; }
 
+/* --- Detector sensor plane space ---------------------------------------------- */
+
+.detector-space {
+  height: 46vh;
+  min-height: 300px;
+  pointer-events: none;   /* clicks pass through; plane is drawn on the canvas */
+}
+
 /* --- Footer ------------------------------------------------------------------ */
 
 .footer {
