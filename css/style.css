@@ -114,6 +114,24 @@ a:hover { text-decoration: underline; }
   margin-bottom: 1.4rem;
 }
 
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+  max-width: 34rem;
+}
+
+.chip {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.28rem 0.85rem;
+  white-space: nowrap;
+}
+
 .icon-row { display: flex; gap: 1rem; }
 
 .icon-row a {
@@ -277,6 +295,44 @@ a:hover { text-decoration: underline; }
 
 .news-text { flex: 1; }
 
+/* --- Talks & Presentations ------------------------------------------------- */
+
+.talk-list { list-style: none; }
+
+.talk-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  color: var(--text-dim);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+}
+.talk-list li:last-child { border-bottom: none; }
+
+.tag {
+  flex-shrink: 0;
+  width: 4.6rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.12rem 0;
+}
+
+.tag-talk { color: var(--accent); border-color: rgba(110, 168, 220, 0.35); }
+.tag-seminar { color: #9db4a8; border-color: rgba(157, 180, 168, 0.35); }
+.tag-poster { color: #b9a0d8; border-color: rgba(185, 160, 216, 0.35); }
+
+.award {
+  color: var(--accent-warm);
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
 /* --- Contact page -------------------------------------------------------------- */
 
 .contact-main { padding-top: 5rem; min-height: 72vh; }
@@ -325,4 +381,6 @@ a:hover { text-decoration: underline; }
   .nav-links { gap: 0.9rem; }
   .nav-links a { font-size: 0.85rem; }
   .news-list li { flex-direction: column; gap: 0.1rem; }
+  .talk-list li { gap: 0.6rem; }
+  .chip-row { justify-content: center; margin-left: auto; margin-right: auto; }
 }

@@ -24,8 +24,9 @@
       <div class="nav-links">
         <a href="#about">About</a>
         <a href="#research">Research</a>
-        <a href="#publications">Publications</a>
         <a href="#news">News</a>
+        <a href="#publications">Publications</a>
+        <a href="#talks">Talks</a>
         <a href="assets/Omar_Alterkait_CV.pdf" target="_blank" rel="noopener">CV</a>
         <a href="contact.html">Contact</a>
       </div>
@@ -42,6 +43,12 @@
         <p class="hero-role-sub">IAIFI Junior Investigator &middot; DOE SCGSR Fellow at SLAC</p>
         <p class="hero-tagline">I build foundation models and differentiable simulators for particle physics,
           turning raw detector signals into 3D pictures of nature's rarest interactions.</p>
+        <div class="chip-row">
+          <span class="chip">Multi-Modal Foundation Models</span>
+          <span class="chip">Differentiable Simulation</span>
+          <span class="chip">Sparse 3D Learning</span>
+          <span class="chip">ML for Science</span>
+        </div>
         <div class="icon-row">
           <a href="#" class="js-email" title="Email" aria-label="Email">
             <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7L4 6v12h16V6l-8 5zm0-2.4L19.2 6H4.8L12 8.6z"/></svg>
@@ -68,11 +75,13 @@
       <h2>About</h2>
       <p>
         I work at the intersection of machine learning and neutrino physics. My research centers on
-        <strong>sparse 3D inverse problems</strong>: reconstructing particle interactions from raw sensor data
-        in detectors like liquid argon time projection chambers and large optical detectors. To do that, I develop
-        <strong>GPU-accelerated differentiable simulators</strong> in JAX, achieving 100&times; to 10,000&times;
-        speedups over traditional Monte Carlo, and <strong>self-supervised foundation models</strong> trained on
-        datasets of more than 10 million events.
+        <strong>sparse 3D inverse problems</strong>: reconstructing particle interactions from raw, sensor-level
+        data in detectors like liquid argon time projection chambers and large optical detectors. To do that,
+        I develop <strong>GPU-accelerated differentiable simulators</strong> in JAX, achieving 100&times; to
+        10,000&times; speedups over traditional Monte Carlo, and <strong>self-supervised multi-modal foundation
+        models</strong> trained on datasets of more than 10 million events. Throughout, I care about what happens
+        at the sensor level: signal processing on raw waveforms, fusing multiple readout modalities, and robustness
+        to the domain shift between simulation and real detector data.
       </p>
       <p>
         I am a PhD candidate at Tufts University advised by Taritree Wongjirad, an IAIFI Junior Investigator at MIT,
@@ -126,6 +135,26 @@
       </div>
     </section>
 
+    <section id="news" class="section">
+      <h2>News</h2>
+      <ul class="news-list">
+        <li><span class="news-date">Jul 2026</span> <span class="news-text">Joining CERN as an SCGSR-IRCA Fellow.</span></li>
+        <li><span class="news-date">Jun 2026</span> <span class="news-text"><strong>Best Poster</strong> award at Neutrino Physics and Machine Learning (NPML) 2026.</span></li>
+        <li><span class="news-date">Feb 2026</span> <span class="news-text">New preprint: <em>End-to-end Differentiable Calibration and Reconstruction for Optical Particle Detectors</em> (arXiv:2602.24129).</span></li>
+        <li><span class="news-date">Jan 2026</span> <span class="news-text">Started the DOE SCGSR Fellowship at SLAC, working with Kazuhiro Terao.</span></li>
+        <li><span class="news-date">Dec 2025</span> <span class="news-text">Two workshop papers at NeurIPS 2025: <em>10 Million Particle Events</em> (AI for Science, <strong>Spotlight Poster</strong>) and <em>Differentiable Ray-Tracing for Optical Particle Detector Simulation</em> (Machine Learning and the Physical Sciences).</span></li>
+        <li><span class="news-date">Nov 2025</span> <span class="news-text"><strong>Best Poster</strong> award at NPML 2025.</span></li>
+        <li><span class="news-date">Jun 2025</span> <span class="news-text"><strong>Best Poster</strong> award at the Fifth MODE Workshop on Differentiable Programming.</span></li>
+        <li><span class="news-date">Dec 2024</span> <span class="news-text"><strong>Best Poster</strong> award at the Future of Artificial Intelligence for Science in Japan workshop.</span></li>
+        <li><span class="news-date">Aug 2024</span> <span class="news-text">Started the Ozaki Program Fellowship at Kavli IPMU, University of Tokyo (through December 2024).</span></li>
+        <li><span class="news-date">Sep 2023</span> <span class="news-text">Awarded a Kuwait University graduate scholarship.</span></li>
+        <li><span class="news-date">Feb 2023</span> <span class="news-text">Received an MS in Physics from Tufts University.</span></li>
+        <li><span class="news-date">Aug 2021</span> <span class="news-text">Started my PhD at Tufts University and joined IAIFI at MIT as a Junior Investigator.</span></li>
+        <li><span class="news-date">May 2021</span> <span class="news-text">Graduated from the University of Colorado, Boulder: BA in Physics (Magna Cum Laude) and BS in Applied Mathematics.</span></li>
+        <li><span class="news-date">Jan 2021</span> <span class="news-text">IRIS-HEP Fellow (through June 2021).</span></li>
+      </ul>
+    </section>
+
     <section id="publications" class="section">
       <h2>Publications</h2>
       <ul class="pub-list">
@@ -150,29 +179,27 @@
         <a href="https://scholar.google.com/citations?user=oGmzwYQAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar profile</a>.</p>
     </section>
 
-    <section id="news" class="section">
-      <h2>News</h2>
-      <ul class="news-list">
-        <li><span class="news-date">Jul 2026</span> <span class="news-text">Joining CERN as an SCGSR-IRCA Fellow.</span></li>
-        <li><span class="news-date">Jun 2026</span> <span class="news-text">Talk and <strong>Best Poster</strong> at Neutrino Physics and Machine Learning (NPML) 2026. Poster at NEUTRINO 2026.</span></li>
-        <li><span class="news-date">Feb 2026</span> <span class="news-text">New preprint: <em>End-to-end Differentiable Calibration and Reconstruction for Optical Particle Detectors</em> (arXiv:2602.24129).</span></li>
-        <li><span class="news-date">Jan 2026</span> <span class="news-text">Started the DOE SCGSR Fellowship at SLAC, working with Kazuhiro Terao.</span></li>
-        <li><span class="news-date">Dec 2025</span> <span class="news-text">Presented two NeurIPS 2025 workshop papers: <em>10 Million Particle Events</em> (AI for Science Workshop, <strong>Spotlight Poster</strong>) and <em>Differentiable Ray-Tracing for Optical Particle Detector Simulation</em> (Machine Learning and the Physical Sciences Workshop).</span></li>
-        <li><span class="news-date">Nov 2025</span> <span class="news-text">Talk and <strong>Best Poster</strong> at NPML 2025. Seminar talks at Nagoya University and Kyoto University.</span></li>
-        <li><span class="news-date">Oct 2025</span> <span class="news-text">Seminar talks at Tohoku University and Colorado State University.</span></li>
-        <li><span class="news-date">Aug 2025</span> <span class="news-text">Poster at the IAIFI Summer Workshop.</span></li>
-        <li><span class="news-date">Jun 2025</span> <span class="news-text">Talk and <strong>Best Poster</strong> at the Fifth MODE Workshop on Differentiable Programming.</span></li>
-        <li><span class="news-date">Mar 2025</span> <span class="news-text">Talk at the APS Global Physics Summit.</span></li>
-        <li><span class="news-date">Dec 2024</span> <span class="news-text"><strong>Best Poster</strong> at the Future of Artificial Intelligence for Science in Japan workshop.</span></li>
-        <li><span class="news-date">Aug 2024</span> <span class="news-text">Started the Ozaki Program Fellowship at Kavli IPMU, University of Tokyo (through December 2024).</span></li>
-        <li><span class="news-date">Jun 2024</span> <span class="news-text">Talk at NPML 2024.</span></li>
-        <li><span class="news-date">Mar 2024</span> <span class="news-text">Seminar talk at the Center for Data-Driven Discovery, Kavli IPMU.</span></li>
-        <li><span class="news-date">Sep 2023</span> <span class="news-text">Awarded a Kuwait University graduate scholarship.</span></li>
-        <li><span class="news-date">Aug 2023</span> <span class="news-text">Talk at NPML 2023. Poster at the International Neutrino Summer School.</span></li>
-        <li><span class="news-date">Feb 2023</span> <span class="news-text">Received an MS in Physics from Tufts University.</span></li>
-        <li><span class="news-date">Aug 2021</span> <span class="news-text">Started my PhD at Tufts University and joined IAIFI at MIT as a Junior Investigator.</span></li>
-        <li><span class="news-date">May 2021</span> <span class="news-text">Graduated from the University of Colorado, Boulder: BA in Physics (Magna Cum Laude) and BS in Applied Mathematics.</span></li>
-        <li><span class="news-date">Jan 2021</span> <span class="news-text">IRIS-HEP Fellow (through June 2021).</span></li>
+    <section id="talks" class="section">
+      <h2>Talks &amp; Presentations</h2>
+      <ul class="talk-list">
+        <li><span class="news-date">Jun 2026</span> <span class="tag tag-talk">Talk</span> <span class="news-text">Neutrino Physics and Machine Learning (NPML) 2026</span></li>
+        <li><span class="news-date">Jun 2026</span> <span class="tag tag-poster">Poster</span> <span class="news-text">NPML 2026 <span class="award">Best Poster</span></span></li>
+        <li><span class="news-date">Jun 2026</span> <span class="tag tag-poster">Poster</span> <span class="news-text">NEUTRINO 2026</span></li>
+        <li><span class="news-date">Nov 2025</span> <span class="tag tag-talk">Talk</span> <span class="news-text">NPML 2025</span></li>
+        <li><span class="news-date">Nov 2025</span> <span class="tag tag-poster">Poster</span> <span class="news-text">NPML 2025 <span class="award">Best Poster</span></span></li>
+        <li><span class="news-date">Nov 2025</span> <span class="tag tag-seminar">Seminar</span> <span class="news-text">Nagoya University</span></li>
+        <li><span class="news-date">Nov 2025</span> <span class="tag tag-seminar">Seminar</span> <span class="news-text">Kyoto University</span></li>
+        <li><span class="news-date">Oct 2025</span> <span class="tag tag-seminar">Seminar</span> <span class="news-text">Tohoku University</span></li>
+        <li><span class="news-date">Oct 2025</span> <span class="tag tag-seminar">Seminar</span> <span class="news-text">Colorado State University</span></li>
+        <li><span class="news-date">Aug 2025</span> <span class="tag tag-poster">Poster</span> <span class="news-text">IAIFI Summer Workshop</span></li>
+        <li><span class="news-date">Jun 2025</span> <span class="tag tag-talk">Talk</span> <span class="news-text">Fifth MODE Workshop on Differentiable Programming</span></li>
+        <li><span class="news-date">Jun 2025</span> <span class="tag tag-poster">Poster</span> <span class="news-text">Fifth MODE Workshop on Differentiable Programming <span class="award">Best Poster</span></span></li>
+        <li><span class="news-date">Mar 2025</span> <span class="tag tag-talk">Talk</span> <span class="news-text">APS Global Physics Summit</span></li>
+        <li><span class="news-date">Dec 2024</span> <span class="tag tag-poster">Poster</span> <span class="news-text">Future of Artificial Intelligence for Science in Japan <span class="award">Best Poster</span></span></li>
+        <li><span class="news-date">Jun 2024</span> <span class="tag tag-talk">Talk</span> <span class="news-text">NPML 2024</span></li>
+        <li><span class="news-date">Mar 2024</span> <span class="tag tag-seminar">Seminar</span> <span class="news-text">Center for Data-Driven Discovery, Kavli IPMU</span></li>
+        <li><span class="news-date">Aug 2023</span> <span class="tag tag-talk">Talk</span> <span class="news-text">NPML 2023</span></li>
+        <li><span class="news-date">Aug 2023</span> <span class="tag tag-poster">Poster</span> <span class="news-text">International Neutrino Summer School</span></li>
       </ul>
     </section>
   </main>
