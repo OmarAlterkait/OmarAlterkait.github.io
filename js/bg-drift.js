@@ -47,6 +47,10 @@
   var LAND_BLEND = 0.35;     // s, pre-landing ease toward the hit position
   var EMPH_POW = 5.0;        // JAXTPC viewer charge emphasis: de^pow
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
+  var COSMIC_MEAN_S = 32;    // mean seconds between ambient cosmic rays
+  var COSMIC_ALPHA = 0.75;   // cosmics dimmer than clicked events
+  var AMBIENT_ALPHA = 0.10;  // medium dust ceiling (pulses go brighter)
+  var AMBIENT_DENSITY = 1 / 11000;  // dust points per document px^2
 
   // ---- Point shader (document-space math) -----------------------------------
   var VS = [
@@ -75,11 +79,15 @@
     'uniform float uEmphPow;',
     'uniform float uEmphAmt;',
     'uniform float uPersp;',       // per-click perspective size factor
+    'uniform vec2 uRot;',          // (cos, sin) in-plane rotation (cosmics)
+    'uniform float uAlphaMul;',    // per-instance dimming (cosmics)
     'varying vec3 vColor;',
     'varying float vA;',
     'void main(){',
-    '  float x0 = uOrigin.x + aPos.x * uScalePx;',
-    '  float y0 = uOrigin.y + aPos.y * uScalePx;',
+    '  vec2 rp = vec2(aPos.x * uRot.x - aPos.y * uRot.y,',
+    '                 aPos.x * uRot.y + aPos.y * uRot.x);',
+    '  float x0 = uOrigin.x + rp.x * uScalePx;',
+    '  float y0 = uOrigin.y + rp.y * uScalePx;',
     '  float effD = clamp(uDepthOff + (aDepth - 0.5) * uDepthSpan, 0.0, 1.0);',
     '  float yLand = mix(uFarY, uNearY, effD);',
     '  float valid = step(y0, yLand);',   // spawned past its landing surface: dead
@@ -99,7 +107,7 @@
     '  float d1 = 1.0 - clamp(dt / uPlaneFade, 0.0, 1.0);',
     '  float flash = 1.0 + 0.6 * exp(-max(dt, 0.0) * 5.0);',
     // Outside the detector footprint: never visible at all.
-    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha * valid * inside;',
+    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha * uAlphaMul * valid * inside;',
     // HSL(hue, 0.78, 0.55): exact port of the viewer's hsl2rgb track colors
     '  vec3 q = clamp(abs(mod(aHue * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);',
     '  vColor = 0.55 + 0.702 * (q - 0.5);',
@@ -145,6 +153,42 @@
     'void main(){ gl_FragColor = vec4(uColor, vA); }',
   ].join('\n');
 
+  // ---- Ambient medium: diffusion wander + upward creep + Ar-39 pulses ------
+  var AVS = [
+    'attribute vec4 aSeed;',       // baseX px, baseY doc px, seed1, seed2
+    'uniform vec2 uVp;',
+    'uniform float uScroll;',
+    'uniform float uTime;',        // s
+    'uniform float uWrapH;',       // wrap height (down to the plane)
+    'uniform float uDpr;',
+    'uniform float uAmbA;',
+    'varying float vA;',
+    'void main(){',
+    '  float s1 = aSeed.z, s2 = aSeed.w;',
+    '  float wob = 6.0 + 9.0 * s2;',
+    '  float x = aSeed.x + wob * sin(uTime * (0.05 + 0.08 * s1) + s1 * 6.2831);',
+    '  float y = mod(aSeed.y - uTime * (2.0 + 3.0 * s2), uWrapH);',
+    '  y += wob * 0.6 * cos(uTime * (0.04 + 0.07 * s2) + s2 * 6.2831);',
+    // Rare soft pulse: an Ar-39 decay blip
+    '  float ph = fract(uTime / (40.0 + 55.0 * s1) + s2);',
+    '  float pulse = max(0.0, 1.0 - abs(ph - 0.5) * 60.0);',
+    '  float sy = y - uScroll;',
+    '  gl_Position = vec4(x / uVp.x * 2.0 - 1.0, 1.0 - sy / uVp.y * 2.0, 0.0, 1.0);',
+    '  vA = uAmbA * (0.5 + 0.5 * s1) + pulse * 0.30;',
+    '  gl_PointSize = (1.1 + 0.6 * s2 + pulse * 2.2) * uDpr;',
+    '}',
+  ].join('\n');
+
+  var AFS = [
+    'precision mediump float;',
+    'varying float vA;',
+    'void main(){',
+    '  vec2 d = gl_PointCoord - vec2(0.5);',
+    '  if (dot(d, d) > 0.25) discard;',
+    '  gl_FragColor = vec4(0.55, 0.68, 0.80, vA);',
+    '}',
+  ].join('\n');
+
   function compile(vsSrc, fsSrc) {
     function sh(type, src) {
       var s = gl.createShader(type);
@@ -167,13 +211,16 @@
 
   // ---- State ---------------------------------------------------------------
   var manifest = null;
-  var events = [];   // per pool entry: {vbo, n} once loaded
-  var prog = null, pProg = null, planeVbo = null;
-  var loc = {}, pLoc = {};
+  var events = [];    // event pool: {vbo, n} once loaded
+  var cosmics = [];   // cosmic muon pool: {vbo, n} once loaded
+  var prog = null, pProg = null, aProg = null, planeVbo = null, ambVbo = null;
+  var loc = {}, pLoc = {}, aLoc = {};
   var planeVerts = null, planeLineStart = 0, planeLineCount = 0;
+  var ambN = 0;
   var plane = { nearY: 0, farY: 0, cx: 0, nearHalf: 0 };
-  var live = [];   // {ev, ox, oy, t0, scalePx, depthOff, persp, tEnd}
-  var running = false;
+  var live = [];   // {pool, idx, ox, oy, rot, alphaMul, t0, scalePx, depthOff, persp, tEnd}
+  var loopStarted = false;
+  var t0Wall = performance.now();
   var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
   function resize() {
@@ -181,8 +228,30 @@
     canvas.height = Math.round(window.innerHeight * dpr);
     gl.viewport(0, 0, canvas.width, canvas.height);
     measurePlane();
+    buildAmbient();
     paint();
   }
+
+  function buildAmbient() {
+    var h = Math.max(plane.farY, window.innerHeight);
+    var n = Math.min(2500, Math.max(150,
+      Math.floor(window.innerWidth * h * AMBIENT_DENSITY)));
+    var v = new Float32Array(n * 4);
+    for (var i = 0; i < n; i++) {
+      v[i * 4] = Math.random() * window.innerWidth;
+      v[i * 4 + 1] = Math.random() * h;
+      v[i * 4 + 2] = Math.random();
+      v[i * 4 + 3] = Math.random();
+    }
+    ambN = n;
+    if (ambVbo) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, ambVbo);
+      gl.bufferData(gl.ARRAY_BUFFER, v, gl.STATIC_DRAW);
+    } else {
+      ambPending = v;
+    }
+  }
+  var ambPending = null;
 
   function measurePlane() {
     var r = planeEl.getBoundingClientRect();
@@ -244,7 +313,7 @@
     ['uVp', 'uScroll', 'uOrigin', 'uScalePx', 'uSpeed', 'uTime', 'uNearY',
      'uFarY', 'uCx', 'uNearHalf', 'uFarScale', 'uPtSize', 'uHitSize', 'uPlaneFade',
      'uAlpha', 'uDepthOff', 'uDepthSpan', 'uBlend', 'uEmphPow', 'uEmphAmt',
-     'uPersp'].forEach(function (u) {
+     'uPersp', 'uRot', 'uAlphaMul'].forEach(function (u) {
       loc[u] = gl.getUniformLocation(prog, u);
     });
     pLoc.aXY = gl.getAttribLocation(pProg, 'aXY');
@@ -252,6 +321,18 @@
     ['uVp', 'uScroll', 'uColor'].forEach(function (u) {
       pLoc[u] = gl.getUniformLocation(pProg, u);
     });
+
+    aProg = compile(AVS, AFS);
+    aLoc.aSeed = gl.getAttribLocation(aProg, 'aSeed');
+    ['uVp', 'uScroll', 'uTime', 'uWrapH', 'uDpr', 'uAmbA'].forEach(function (u) {
+      aLoc[u] = gl.getUniformLocation(aProg, u);
+    });
+    ambVbo = gl.createBuffer();
+    if (ambPending) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, ambVbo);
+      gl.bufferData(gl.ARRAY_BUFFER, ambPending, gl.STATIC_DRAW);
+      ambPending = null;
+    }
 
     planeVbo = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, planeVbo);
@@ -277,11 +358,47 @@
     var depthOff = 0.12 + 0.76 * Math.random();
     var persp = PLANE_FAR_SCALE + (1 - PLANE_FAR_SCALE) * depthOff;
     var scalePx = Math.min(window.innerWidth, window.innerHeight) * CLOUD_HALF_W * persp;
-    var tEnd = (plane.nearY - oy + scalePx) / SPEED + PLANE_FADE + 0.5;
+    addInstance({ pool: events, idx: evIdx, ox: ox, oy: oy,
+                  rot: [1, 0], alphaMul: 1, depthOff: depthOff, persp: persp,
+                  scalePx: scalePx });
+  }
+
+  function spawnCosmic() {
+    var avail = [];
+    for (var i = 0; i < cosmics.length; i++) if (cosmics[i]) avail.push(i);
+    if (!avail.length) return;
+    var idx = avail[Math.floor(Math.random() * avail.length)];
+    // Steep-ish angle from horizontal, leaning either way (cosmic zenith-ish)
+    var ang = (38 + 47 * Math.random()) * Math.PI / 180;
+    if (Math.random() < 0.5) ang = Math.PI - ang;
+    var depthOff = 0.12 + 0.76 * Math.random();
+    var persp = PLANE_FAR_SCALE + (1 - PLANE_FAR_SCALE) * depthOff;
+    var halfLen = Math.max(window.innerWidth, window.innerHeight) *
+                  (0.45 + 0.35 * Math.random()) * persp;
+    // Spawn near the current viewport so the visitor actually sees it
+    var ox = window.innerWidth * (0.15 + 0.7 * Math.random());
+    var oy = window.scrollY + window.innerHeight * (0.1 + 0.45 * Math.random());
+    if (oy > plane.farY - 200) oy = Math.max(120, plane.farY - 200);
+    addInstance({ pool: cosmics, idx: idx, ox: ox, oy: oy,
+                  rot: [Math.cos(ang), Math.sin(ang)], alphaMul: COSMIC_ALPHA,
+                  depthOff: depthOff, persp: persp, scalePx: halfLen });
+  }
+
+  function addInstance(inst) {
+    inst.t0 = performance.now();
+    inst.tEnd = (plane.nearY - inst.oy + inst.scalePx) / SPEED + PLANE_FADE + 0.5;
     if (live.length >= MAX_LIVE) live.shift();
-    live.push({ ev: evIdx, ox: ox, oy: oy, t0: performance.now(), scalePx: scalePx,
-                depthOff: depthOff, persp: persp, tEnd: tEnd });
-    start();
+    live.push(inst);
+  }
+
+  function scheduleCosmic() {
+    // Poisson arrivals, clamped so it never machine-guns or goes silent
+    var delay = Math.min(120, Math.max(8,
+      -Math.log(1 - Math.random()) * COSMIC_MEAN_S)) * 1000;
+    setTimeout(function () {
+      if (!document.hidden) spawnCosmic();
+      scheduleCosmic();
+    }, delay);
   }
 
   function paint() {
@@ -289,6 +406,21 @@
     gl.clear(gl.COLOR_BUFFER_BIT);
     var vw = window.innerWidth, vh = window.innerHeight;
     var sc = window.scrollY;
+
+    // Ambient medium (drawn behind everything)
+    if (ambN > 0 && ambVbo) {
+      gl.useProgram(aProg);
+      gl.bindBuffer(gl.ARRAY_BUFFER, ambVbo);
+      gl.vertexAttribPointer(aLoc.aSeed, 4, gl.FLOAT, false, 16, 0);
+      gl.enableVertexAttribArray(aLoc.aSeed);
+      gl.uniform2f(aLoc.uVp, vw, vh);
+      gl.uniform1f(aLoc.uScroll, sc);
+      gl.uniform1f(aLoc.uTime, reduceMotion ? 0 : (now - t0Wall) / 1000);
+      gl.uniform1f(aLoc.uWrapH, Math.max(plane.farY, vh));
+      gl.uniform1f(aLoc.uDpr, dpr);
+      gl.uniform1f(aLoc.uAmbA, AMBIENT_ALPHA);
+      gl.drawArrays(gl.POINTS, 0, ambN);
+    }
 
     // Sensor plane
     gl.useProgram(pProg);
@@ -325,7 +457,7 @@
 
     for (var j = live.length - 1; j >= 0; j--) {
       var inst = live[j];
-      var ev = events[inst.ev];
+      var ev = inst.pool[inst.idx];
       var t = (now - inst.t0) / 1000;
       if (!ev || t > inst.tEnd) { live.splice(j, 1); continue; }
       gl.bindBuffer(gl.ARRAY_BUFFER, ev.vbo);
@@ -342,49 +474,57 @@
       gl.uniform1f(loc.uTime, t);
       gl.uniform1f(loc.uDepthOff, inst.depthOff);
       gl.uniform1f(loc.uPersp, inst.persp);
+      gl.uniform2f(loc.uRot, inst.rot[0], inst.rot[1]);
+      gl.uniform1f(loc.uAlphaMul, inst.alphaMul);
       gl.drawArrays(gl.POINTS, 0, ev.n);
     }
   }
 
+  // The ambient medium animates continuously, so the loop always runs:
+  // full rate while events are in flight, throttled to ~30fps otherwise.
+  // rAF stops on hidden tabs, which pauses the whole chain.
   function loop() {
     paint();
     if (live.length > 0) {
       requestAnimationFrame(loop);
     } else {
-      running = false;   // idle again: only scroll/resize repaints
+      setTimeout(function () { requestAnimationFrame(loop); }, 33);
     }
   }
 
   function start() {
-    if (running) return;
-    running = true;
+    if (loopStarted) return;
+    loopStarted = true;
     requestAnimationFrame(loop);
   }
 
   // ---- Init ----------------------------------------------------------------
-  function loadEvent(i) {
-    var f = manifest.events[i].file;
-    return fetch('assets/bg/' + f + '?v=__BUILD__')
+  function loadPool(list, store, i) {
+    return fetch('assets/bg/' + list[i].file + '?v=__BUILD__')
       .then(function (r) { return r.arrayBuffer(); })
       .then(function (buf) {
         var b = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, b);
         gl.bufferData(gl.ARRAY_BUFFER, buf, gl.STATIC_DRAW);
-        events[i] = { vbo: b, n: manifest.events[i].n };
+        store[i] = { vbo: b, n: list[i].n };
       });
   }
+  function loadEvent(i) { return loadPool(manifest.events, events, i); }
+  function loadCosmic(i) { return loadPool(manifest.cosmics, cosmics, i); }
 
   fetch('assets/bg/bg_events.json?v=__BUILD__')
     .then(function (r) { return r.json(); })
     .then(function (m) {
       manifest = m;
       events = new Array(m.events.length);
+      cosmics = new Array((m.cosmics || []).length);
       setupGL();
       window.addEventListener('resize', resize);
       window.addEventListener('scroll', function () {
-        if (!running) paint();     // keep the static plane glued to the page
+        if (!loopStarted) paint();  // static mode: keep plane glued to page
       }, { passive: true });
       resize();
+      if (!reduceMotion) start();   // continuous ambient loop
       return loadEvent(0);
     })
     .then(function () {
@@ -395,21 +535,25 @@
       // click). A failed fetch retries once after 5s.
       var conn = navigator.connection || {};
       var frugal = conn.saveData || /2g/.test(conn.effectiveType || '');
-      function prefetch(i) {
-        loadEvent(i).catch(function () {
-          setTimeout(function () { loadEvent(i).catch(function () {}); }, 5000);
+      function retrying(fn, i) {
+        fn(i).catch(function () {
+          setTimeout(function () { fn(i).catch(function () {}); }, 5000);
         });
       }
       if (!frugal) {
-        for (var i = 1; i < manifest.events.length; i++) prefetch(i);
+        for (var i = 1; i < manifest.events.length; i++) retrying(loadEvent, i);
+        for (var k = 0; k < cosmics.length; k++) retrying(loadCosmic, k);
       }
 
-      if (reduceMotion) return;    // static plane only
+      if (reduceMotion) return;    // static dust + plane only
 
       document.addEventListener('click', function (e) {
         if (e.target.closest('a, button, input, select, textarea, nav')) return;
         spawn(e.clientX, e.clientY);
       });
+
+      // Ambient cosmic rays (needs the cosmic pool, so not for frugal mode)
+      if (!frugal && cosmics.length) scheduleCosmic();
 
       // Welcome shot so first-time visitors see what the page does
       setTimeout(function () {

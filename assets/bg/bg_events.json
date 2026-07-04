@@ -152,5 +152,71 @@
   }
  ],
  "source": "JAXTPC doraemon pixel_test_00_00_02 run_0027575715",
- "colormap": "hsl(track-golden-ratio-hash, 0.78, 0.55)"
+ "colormap": "hsl(track-golden-ratio-hash, 0.78, 0.55)",
+ "cosmics": [
+  {
+   "file": "bg_cosmic_0.bin",
+   "n": 9000,
+   "event": 169,
+   "volume": 0,
+   "muon": 33,
+   "lengthMm": 4420.816368883444
+  },
+  {
+   "file": "bg_cosmic_1.bin",
+   "n": 9000,
+   "event": 57,
+   "volume": 1,
+   "muon": 34,
+   "lengthMm": 4348.281829481168
+  },
+  {
+   "file": "bg_cosmic_2.bin",
+   "n": 9000,
+   "event": 91,
+   "volume": 0,
+   "muon": 69,
+   "lengthMm": 4112.101296453941
+  },
+  {
+   "file": "bg_cosmic_3.bin",
+   "n": 9000,
+   "event": 77,
+   "volume": 1,
+   "muon": 29,
+   "lengthMm": 4081.7042892062414
+  },
+  {
+   "file": "bg_cosmic_4.bin",
+   "n": 9000,
+   "event": 107,
+   "volume": 1,
+   "muon": 36,
+   "lengthMm": 3799.6894341791667
+  },
+  {
+   "file": "bg_cosmic_5.bin",
+   "n": 9000,
+   "event": 181,
+   "volume": 1,
+   "muon": 51,
+   "lengthMm": 3920.487998616097
+  },
+  {
+   "file": "bg_cosmic_6.bin",
+   "n": 9000,
+   "event": 5,
+   "volume": 0,
+   "muon": 49,
+   "lengthMm": 3854.580151616759
+  },
+  {
+   "file": "bg_cosmic_7.bin",
+   "n": 9000,
+   "event": 144,
+   "volume": 1,
+   "muon": 35,
+   "lengthMm": 3886.3929498845737
+  }
+ ]
 }
