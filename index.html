@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omar Alterkait</title>
+  <meta name="description" content="Omar Alterkait, PhD candidate at Tufts University developing foundation models and differentiable simulators for particle physics.">
+  <meta property="og:title" content="Omar Alterkait">
+  <meta property="og:description" content="PhD candidate at Tufts University developing foundation models and differentiable simulators for particle physics.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://omaralterkait.github.io/">
+  <meta property="og:image" content="https://omaralterkait.github.io/assets/img/omar.jpg">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1220'/%3E%3Ctext x='32' y='43' font-family='sans-serif' font-size='26' font-weight='700' text-anchor='middle' fill='%234fd1ff'%3EOA%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Background visualization canvas (placeholder animation for now) -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#top" class="nav-name">Omar Alterkait</a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#research">Research</a>
+        <a href="#publications">Publications</a>
+        <a href="#news">News</a>
+        <a href="assets/Omar_Alterkait_CV.pdf" target="_blank" rel="noopener">CV</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <img class="headshot" src="assets/img/omar.jpg" alt="Portrait of Omar Alterkait"
+           onerror="this.style.display='none'">
+      <div class="hero-text">
+        <h1>Omar Alterkait</h1>
+        <p class="hero-role">PhD Candidate in Physics, Tufts University</p>
+        <p class="hero-role-sub">IAIFI Junior Investigator &middot; SCGSR Fellow at SLAC &rarr; CERN</p>
+        <p class="hero-tagline">I build foundation models and differentiable simulators for particle physics,
+          turning raw detector signals into 3D pictures of nature's rarest interactions.</p>
+        <div class="icon-row">
+          <a href="#" class="js-email" title="Email" aria-label="Email">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 7L4 6v12h16V6l-8 5zm0-2.4L19.2 6H4.8L12 8.6z"/></svg>
+          </a>
+          <a href="https://github.com/OmarAlterkait" title="GitHub" aria-label="GitHub" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.18-.02-2.14-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.72-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.27 5.69.41.35.78 1.05.78 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.68.8.56A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+          </a>
+          <a href="https://scholar.google.com/citations?user=oGmzwYQAAAAJ&amp;hl=en" title="Google Scholar" aria-label="Google Scholar" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M12 2 1 8.5l4.72 2.79A6.98 6.98 0 0 1 12 8c2.42 0 4.55 1.23 5.8 3.1l.48-.28V14h1.44V9.85L23 8.5 12 2zm0 7.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/omaralterkait/" title="LinkedIn" aria-label="LinkedIn" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.24 8.31h4.52V23H.24V8.31zM8.34 8.31h4.33v2h.06c.6-1.14 2.08-2.34 4.28-2.34 4.58 0 5.42 3.01 5.42 6.92V23h-4.5v-7.1c0-1.7-.03-3.88-2.37-3.88-2.37 0-2.73 1.85-2.73 3.76V23h-4.5V8.31z"/></svg>
+          </a>
+          <a href="assets/Omar_Alterkait_CV.pdf" title="Download CV" aria-label="Download CV" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM8 12h8v1.5H8V12zm0 3.5h8V17H8v-1.5z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="about" class="section">
+      <h2>About</h2>
+      <p>
+        I work at the intersection of machine learning and neutrino physics. My research centers on
+        <strong>sparse 3D inverse problems</strong>: reconstructing particle interactions from raw sensor data
+        in detectors like liquid argon time projection chambers and large optical detectors. To do that, I develop
+        <strong>GPU-accelerated differentiable simulators</strong> in JAX, achieving 100&times; to 10,000&times;
+        speedups over traditional Monte Carlo, and <strong>self-supervised foundation models</strong> trained on
+        datasets of more than 10 million events.
+      </p>
+      <p>
+        I am a PhD candidate at Tufts University advised by Taritree Wongjirad, an IAIFI Junior Investigator at MIT,
+        and currently a DOE SCGSR Fellow at SLAC working with Kazuhiro Terao. In July 2026 I will join CERN as an
+        SCGSR-IRCA Fellow. Originally from Kuwait, I am an Academic Scholar of Kuwait University, and an Arabic
+        calligrapher when away from the keyboard.
+      </p>
+    </section>
+
+    <section id="research" class="section">
+      <h2>Research</h2>
+      <div class="cards">
+
+        <article class="card">
+          <h3>JAXTPC: Multi-modal foundation models for 3D reconstruction in LArTPCs</h3>
+          <p class="card-collab">with Kazuhiro Terao (SLAC)</p>
+          <p>
+            The first 10-million-event dataset pairing raw sensor waveforms with 3D ground truth, 30&times; larger
+            than anything existing. A JAX/GPU rewrite brought simulation from 50s to 0.5s per event, capturing charge
+            and light modalities from the same physics events. On top of it: PTv3/Sonata point cloud transformers and
+            cross-modal masked autoencoding directly on raw data, with public Data Olympics benchmarks to drive
+            collaborative algorithm development.
+          </p>
+          <p class="card-links"><a href="https://github.com/OmarAlterkait/JAXTPC" target="_blank" rel="noopener">GitHub</a></p>
+        </article>
+
+        <article class="card">
+          <h3>LUCiD: Differentiable ray-tracing for optical detector calibration</h3>
+          <p class="card-collab">with C&eacute;sar Jes&uacute;s-Valls (CERN)</p>
+          <p>
+            The first ray-tracing framework that is end-to-end differentiable from particle parameters to detector
+            response. Neural photon emission models keep stochastic physics differentiable; JAX JIT compilation and
+            grid-based spatial filtering deliver 1M photons in 30ms, a 10,000&times; speedup over CPU Monte Carlo.
+            Matches state-of-the-art reconstruction baselines while optimizing directly through parameter landscapes
+            where MCMC fails.
+          </p>
+          <p class="card-links">
+            <a href="https://github.com/CIDeR-ML/LUCiD" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://arxiv.org/abs/2602.24129" target="_blank" rel="noopener">arXiv:2602.24129</a>
+          </p>
+        </article>
+
+        <article class="card">
+          <h3>Sparse Euclidean equivariant networks for particle reconstruction</h3>
+          <p class="card-collab">with Tess Smidt (MIT)</p>
+          <p>
+            Combining sparse convolutions with E(3) equivariant architectures so networks respect rotation,
+            translation, and reflection symmetry by construction: no data augmentation and better sample efficiency
+            through geometric inductive biases, targeted at particle reconstruction in the MicroBooNE detector.
+          </p>
+        </article>
+
+      </div>
+    </section>
+
+    <section id="publications" class="section">
+      <h2>Publications</h2>
+      <ul class="pub-list">
+        <li>
+          <span class="pub-title">End-to-end Differentiable Calibration and Reconstruction for Optical Particle Detectors</span><br>
+          <span class="pub-authors">Omar Alterkait, C&eacute;sar Jes&uacute;s-Valls, Ryo Matsumoto, Patrick de Perio, Kazuhiro Terao</span><br>
+          <span class="pub-venue">arXiv:2602.24129 [hep-ex], 2026</span>
+          <a class="pub-link" href="https://arxiv.org/abs/2602.24129" target="_blank" rel="noopener">arXiv</a>
+        </li>
+        <li>
+          <span class="pub-title">10 Million Particle Events: Enabling Foundation Models for Sparse 3D Inverse Problems</span><br>
+          <span class="pub-authors">Omar Alterkait et al.</span><br>
+          <span class="pub-venue">NeurIPS 2025 AI for Science Workshop, <strong>Spotlight Poster</strong></span>
+        </li>
+        <li>
+          <span class="pub-title">Differentiable Ray-Tracing for Optical Particle Detector Simulation</span><br>
+          <span class="pub-authors">Omar Alterkait, C&eacute;sar Jes&uacute;s-Valls</span><br>
+          <span class="pub-venue">NeurIPS 2025 Machine Learning and the Physical Sciences Workshop, Poster</span>
+        </li>
+      </ul>
+    </section>
+
+    <section id="news" class="section">
+      <h2>News</h2>
+      <ul class="news-list">
+        <li><span class="news-date">Jul 2026</span> Joining CERN as an SCGSR-IRCA Fellow.</li>
+        <li><span class="news-date">Jun 2026</span> Talk and <strong>Best Poster</strong> at Neutrino Physics and Machine Learning (NPML) 2026. Poster at NEUTRINO 2026.</li>
+        <li><span class="news-date">Feb 2026</span> New preprint: <em>End-to-end Differentiable Calibration and Reconstruction for Optical Particle Detectors</em> (arXiv:2602.24129).</li>
+        <li><span class="news-date">Jan 2026</span> Started the DOE SCGSR Fellowship at SLAC, working with Kazuhiro Terao.</li>
+        <li><span class="news-date">Dec 2025</span> Presented two NeurIPS 2025 workshop papers: <em>10 Million Particle Events</em> (AI for Science Workshop, <strong>Spotlight Poster</strong>) and <em>Differentiable Ray-Tracing for Optical Particle Detector Simulation</em> (Machine Learning and the Physical Sciences Workshop).</li>
+        <li><span class="news-date">Nov 2025</span> Talk and <strong>Best Poster</strong> at NPML 2025. Seminar talks at Nagoya University and Kyoto University.</li>
+        <li><span class="news-date">Oct 2025</span> Seminar talks at Tohoku University and Colorado State University.</li>
+        <li><span class="news-date">Aug 2025</span> Poster at the IAIFI Summer Workshop.</li>
+        <li><span class="news-date">Jun 2025</span> Talk and <strong>Best Poster</strong> at the Fifth MODE Workshop on Differentiable Programming.</li>
+        <li><span class="news-date">Mar 2025</span> Talk at the APS Global Physics Summit.</li>
+        <li><span class="news-date">Dec 2024</span> <strong>Best Poster</strong> at the Future of Artificial Intelligence for Science in Japan workshop.</li>
+        <li><span class="news-date">Aug 2024</span> Started the Ozaki Program Fellowship at Kavli IPMU, University of Tokyo (through December 2024).</li>
+        <li><span class="news-date">Jun 2024</span> Talk at NPML 2024.</li>
+        <li><span class="news-date">Mar 2024</span> Seminar talk at the Center for Data-Driven Discovery, Kavli IPMU.</li>
+        <li><span class="news-date">Sep 2023</span> Named an Academic Scholar of Kuwait University.</li>
+        <li><span class="news-date">Aug 2023</span> Talk at NPML 2023. Poster at the International Neutrino Summer School.</li>
+        <li><span class="news-date">Feb 2023</span> Received an MS in Physics from Tufts University.</li>
+        <li><span class="news-date">Aug 2021</span> Started my PhD at Tufts University and joined IAIFI at MIT as a Junior Investigator.</li>
+        <li><span class="news-date">May 2021</span> Graduated from the University of Colorado, Boulder: BA in Physics (Magna Cum Laude) and BS in Applied Mathematics.</li>
+        <li><span class="news-date">Jan 2021</span> IRIS-HEP Fellow (through June 2021).</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Omar Alterkait &middot; <a href="#" class="js-email js-email-text"></a><noscript>omar [dot] alterkait [at] tufts [dot] edu</noscript></p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
