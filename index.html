@@ -97,27 +97,31 @@
       <div class="cards">
 
         <article class="card">
-          <h3>JAXTPC: Multi-modal foundation models for 3D reconstruction in LArTPCs</h3>
+          <h3>JAXTPC: Differentiable simulation and foundation-model data for LArTPCs</h3>
           <p class="card-collab">with Kazuhiro Terao (SLAC)</p>
           <p>
-            The first 10-million-event dataset pairing raw sensor waveforms with 3D ground truth, 30&times; larger
-            than anything existing. A JAX/GPU rewrite brought simulation from 50s to 0.5s per event, capturing charge
-            and light modalities from the same physics events. On top of it: PTv3/Sonata point cloud transformers and
-            cross-modal masked autoencoding directly on raw data, with public Data Olympics benchmarks to drive
-            collaborative algorithm development.
+            A GPU-accelerated, differentiable liquid argon TPC simulator in JAX, modeling the full detector
+            response chain: charge recombination, electron drift, diffusion, wire and pixel readout, electronics,
+            noise, and digitization, for arbitrary multi-volume geometries from SBND to DUNE ND-LAr scale, with
+            gradients flowing through every physics parameter. It powers production of a 10-million-event dataset
+            pairing raw sensor waveforms with 3D ground truth, 30&times; larger than existing sets and capturing
+            charge and light from the same events, as the substrate for multi-modal foundation models of particle
+            reconstruction.
           </p>
           <p class="card-links"><a href="https://github.com/OmarAlterkait/JAXTPC" target="_blank" rel="noopener">GitHub</a></p>
         </article>
 
         <article class="card">
-          <h3>LUCiD: Differentiable ray-tracing for optical detector calibration</h3>
+          <h3>LUCiD: End-to-end differentiable optical detector simulation</h3>
           <p class="card-collab">with C&eacute;sar Jes&uacute;s-Valls (CERN)</p>
           <p>
-            The first ray-tracing framework that is end-to-end differentiable from particle parameters to detector
-            response. Neural photon emission models keep stochastic physics differentiable; JAX JIT compilation and
-            grid-based spatial filtering deliver 1M photons in 30ms, a 10,000&times; speedup over CPU Monte Carlo.
-            Matches state-of-the-art reconstruction baselines while optimizing directly through parameter landscapes
-            where MCMC fails.
+            The first end-to-end differentiable simulator for optical particle detectors, unifying simulation,
+            calibration, and tracking in a single JAX framework. Physics-informed SIREN networks stand in for
+            GEANT4 photon generation, and gradients flow through ray tracing, scattering, and sensor response.
+            LUCiD calibrates some twenty global optical parameters together with per-sensor efficiency maps
+            across tens of thousands of PMTs, approaching the Cram&eacute;r-Rao bound, and matches or surpasses
+            conventional non-differentiable methods in accuracy and speed on water Cherenkov geometries from
+            WCTE to Hyper-Kamiokande scale.
           </p>
           <p class="card-links">
             <a href="https://github.com/CIDeR-ML/LUCiD" target="_blank" rel="noopener">GitHub</a>
