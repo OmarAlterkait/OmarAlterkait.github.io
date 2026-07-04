@@ -388,15 +388,20 @@
       return loadEvent(0);
     })
     .then(function () {
-      // Prefetch the rest of the pool quietly after first paint, unless the
-      // visitor is on a data-saver or very slow connection (they still get
-      // event 0 on every click).
+      // Prefetch the rest of the pool immediately and in parallel: small
+      // files on one HTTP/2 connection multiplex fine, so the whole pool is
+      // typically resident within a couple of seconds. Skipped for
+      // data-saver / very slow connections (they still get event 0 on every
+      // click). A failed fetch retries once after 5s.
       var conn = navigator.connection || {};
       var frugal = conn.saveData || /2g/.test(conn.effectiveType || '');
+      function prefetch(i) {
+        loadEvent(i).catch(function () {
+          setTimeout(function () { loadEvent(i).catch(function () {}); }, 5000);
+        });
+      }
       if (!frugal) {
-        for (var i = 1; i < manifest.events.length; i++) {
-          setTimeout(loadEvent.bind(null, i), 800 * i);
-        }
+        for (var i = 1; i < manifest.events.length; i++) prefetch(i);
       }
 
       if (reduceMotion) return;    // static plane only

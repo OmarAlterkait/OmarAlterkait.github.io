@@ -47,6 +47,7 @@ a:hover { text-decoration: underline; }
   z-index: 10;
   background: rgba(15, 20, 25, 0.85);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
 
@@ -123,10 +124,11 @@ a:hover { text-decoration: underline; }
   align-items: center;
   gap: 2.5rem;
   flex-wrap: wrap;
-  background: rgba(15, 20, 25, 0.88);
+  background: rgba(15, 20, 25, 0.78);
   border: 1px solid var(--border);
   border-radius: 14px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 2.6rem 2.4rem;
 }
 
@@ -180,8 +182,8 @@ a:hover { text-decoration: underline; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--bg-panel);
@@ -215,14 +217,17 @@ a:hover { text-decoration: underline; }
 
 /* --- Sections ------------------------------------------------------------- */
 
+main { padding: 0 1.25rem; }
+
 .section {
   max-width: var(--maxw);
-  margin: 0 auto 1.8rem;
+  margin: 0 auto 2.75rem;
   padding: 2.6rem 2.2rem;
   background: rgba(15, 20, 25, 0.88);
   border: 1px solid var(--border);
   border-radius: 14px;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .section h2 {
@@ -436,7 +441,14 @@ a:hover { text-decoration: underline; }
 @media (max-width: 640px) {
   .hero { padding-top: 6rem; min-height: auto; }
   .hero-inner { flex-direction: column; text-align: center; padding: 1.8rem 1.2rem; }
-  .section { padding: 1.8rem 1.2rem; }
+  .section { padding: 1.6rem 1.1rem; margin-bottom: 1.8rem; }
+  /* Blur over an animating canvas is a per-frame recomposite on mobile
+     GPUs; go more opaque instead. */
+  .hero-inner, .section {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(15, 20, 25, 0.94);
+  }
   .hero-text h1 { font-size: 2rem; }
   .icon-row { justify-content: center; }
   .hero-tagline { margin-left: auto; margin-right: auto; }
