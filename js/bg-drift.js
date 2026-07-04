@@ -49,7 +49,7 @@
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
   var COSMIC_MEAN_S = 9;    // mean seconds between ambient cosmic rays
   var COSMIC_ALPHA = 0.75;   // cosmics dimmer than clicked events
-  var AMBIENT_ALPHA = 0.30;  // dot alpha ceiling (original was ~0.10-0.38)
+  var AMBIENT_ALPHA = 0.42;  // dot alpha ceiling (original was 0.15-0.50)
   var AMBIENT_DENSITY = 1 / 18000;  // dots per viewport px^2 (original value)
 
   // ---- Point shader (document-space math) -----------------------------------
@@ -185,7 +185,7 @@
     '  float r = length(d);',
     '  if (r > 0.5) discard;',
     '  float edge = 1.0 - smoothstep(0.32, 0.5, r);',
-    '  gl_FragColor = vec4(0.43, 0.66, 0.86, vA * edge);',
+    '  gl_FragColor = vec4(0.31, 0.82, 1.0, vA * edge);',  // original #4fd1ff
     '}',
   ].join('\n');
 
