@@ -333,6 +333,12 @@ a:hover { text-decoration: underline; }
   margin-left: 0.5rem;
 }
 
+.loc {
+  color: var(--text-dim);
+  opacity: 0.75;
+  font-size: 0.9em;
+}
+
 /* --- Contact page -------------------------------------------------------------- */
 
 .contact-main { padding-top: 5rem; min-height: 72vh; }
