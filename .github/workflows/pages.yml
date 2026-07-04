@@ -25,7 +25,8 @@ jobs:
 
       # Stamp the commit into the page so the live site is verifiable
       - name: Stamp commit SHA into index.html
-        run: printf '\n<!-- deployed: %s -->\n' "$GITHUB_SHA" >> index.html
+        run: |
+          printf '\n<!-- deployed: %s -->\n' "$GITHUB_SHA" >> index.html
 
       - uses: actions/configure-pages@v5
 
