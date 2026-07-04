@@ -36,7 +36,7 @@
 
   // ---- Tunables -----------------------------------------------------------
   var CLOUD_HALF_W = 0.30;   // cloud half-width, fraction of min(vw, vh)
-  var SPEED = 260;           // drift speed, CSS px / s
+  var SPEED = 185;           // drift speed, CSS px / s
   var GLOBAL_ALPHA = 0.60;   // overall subtlety dial
   var POINT_SIZE = 2.4;      // in-flight point size at dpr=1
   var HIT_SIZE = 1.8;        // landed point size at dpr=1
@@ -63,6 +63,7 @@
     'uniform float uNearY;',       // plane near edge, document px
     'uniform float uFarY;',        // plane far edge, document px
     'uniform float uCx;',          // plane center x, px
+    'uniform float uNearHalf;',    // plane near-edge half-width, px
     'uniform float uFarScale;',
     'uniform float uPtSize;',
     'uniform float uHitSize;',
@@ -85,17 +86,20 @@
     '  float tArr = max(yLand - y0, 0.0) / uSpeed;',
     '  float arrived = step(tArr, uTime);',
     '  float y = y0 + min(uTime, tArr) * uSpeed;',
-    '  float xLand = uCx + (x0 - uCx) * mix(uFarScale, 1.0, effD);',
+    '  float x = x0;',                    // charge falls straight down, always
+    // Inside the detector? Plane half-width at this landing depth.
+    '  float halfW = uNearHalf * mix(uFarScale, 1.0, effD);',
+    '  float inside = step(abs(x0 - uCx), halfW);',
     '  float pre = clamp((uTime - tArr) / uBlend + 1.0, 0.0, 1.0);',
     '  pre = pre * pre * (3.0 - 2.0 * pre);',
-    '  float x = mix(x0, xLand, pre);',
     '  float emph = pow(clamp(aDe, 0.001, 1.0), uEmphPow);',
     '  float eF = mix(1.0, emph, uEmphAmt);',
     '  float aFly = 0.85 * max(eF, 0.03);',
     '  float dt = uTime - tArr;',
     '  float d1 = 1.0 - clamp(dt / uPlaneFade, 0.0, 1.0);',
     '  float flash = 1.0 + 0.6 * exp(-max(dt, 0.0) * 5.0);',
-    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha * valid;',
+    // Lands inside the plane: flash + decay. Outside: insta-dead on arrival.
+    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8) * inside, arrived) * uAlpha * valid;',
     // HSL(hue, 0.78, 0.55): exact port of the viewer's hsl2rgb track colors
     '  vec3 q = clamp(abs(mod(aHue * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);',
     '  vColor = 0.55 + 0.702 * (q - 0.5);',
@@ -185,12 +189,12 @@
     plane.farY = top + r.height * 0.22;
     plane.nearY = top + r.height * 0.88;
     plane.cx = window.innerWidth / 2;
+    plane.nearHalf = window.innerWidth * 0.44;
     buildPlaneGeometry();
   }
 
   function buildPlaneGeometry() {
-    var vw = window.innerWidth;
-    var nearHalf = vw * 0.44;
+    var nearHalf = plane.nearHalf;
     var farHalf = nearHalf * PLANE_FAR_SCALE;
     var cx = plane.cx, ny = plane.nearY, fy = plane.farY;
     var fillA = 0.045, edgeA = 0.22, gridA = 0.09;
@@ -237,7 +241,7 @@
       loc[a] = gl.getAttribLocation(prog, a);
     });
     ['uVp', 'uScroll', 'uOrigin', 'uScalePx', 'uSpeed', 'uTime', 'uNearY',
-     'uFarY', 'uCx', 'uFarScale', 'uPtSize', 'uHitSize', 'uPlaneFade',
+     'uFarY', 'uCx', 'uNearHalf', 'uFarScale', 'uPtSize', 'uHitSize', 'uPlaneFade',
      'uAlpha', 'uDepthOff', 'uDepthSpan', 'uBlend', 'uEmphPow', 'uEmphAmt',
      'uPersp'].forEach(function (u) {
       loc[u] = gl.getUniformLocation(prog, u);
@@ -315,6 +319,7 @@
     gl.uniform1f(loc.uNearY, plane.nearY);
     gl.uniform1f(loc.uFarY, plane.farY);
     gl.uniform1f(loc.uCx, plane.cx);
+    gl.uniform1f(loc.uNearHalf, plane.nearHalf);
     gl.uniform1f(loc.uFarScale, PLANE_FAR_SCALE);
     gl.uniform1f(loc.uPtSize, POINT_SIZE * dpr);
     gl.uniform1f(loc.uHitSize, HIT_SIZE * dpr);
