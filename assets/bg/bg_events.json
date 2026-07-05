@@ -218,5 +218,6 @@
    "muon": 35,
    "lengthMm": 3886.3929498845737
   }
- ]
+ ],
+ "record": "8B: px i16, py i16, depth u8, form u8, hue u8, de u8"
 }

@@ -47,6 +47,9 @@
   var LAND_BLEND = 0.35;     // s, pre-landing ease toward the hit position
   var EMPH_POW = 5.0;        // JAXTPC viewer charge emphasis: de^pow
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
+  var FORM_S = 0.75;         // interaction formation duration (grows in, no drift)
+  var COSMIC_FORM_S = 0.45;  // cosmic muon draws in faster
+  var FADE_IN_S = 0.10;      // per-point appear fade-in
   var COSMIC_MEAN_S = 9;    // mean seconds between ambient cosmic rays
   var COSMIC_ALPHA = 0.75;   // cosmics dimmer than clicked events
   var AMBIENT_ALPHA = 0.42;  // dot alpha ceiling (original was 0.15-0.50)
@@ -56,6 +59,7 @@
   var VS = [
     'attribute vec2 aPos;',
     'attribute float aDepth;',     // 0 far .. 1 near
+    'attribute float aForm;',      // formation percentile, 0 first .. 1 last
     'attribute float aHue;',       // track hue (viewer golden-ratio hash)
     'attribute float aDe;',
     'uniform vec2 uVp;',           // viewport CSS px
@@ -81,6 +85,8 @@
     'uniform float uPersp;',       // per-click perspective size factor
     'uniform vec2 uRot;',          // (cos, sin) in-plane rotation (cosmics)
     'uniform float uAlphaMul;',    // per-instance dimming (cosmics)
+    'uniform float uFormDur;',     // s, formation phase (grows in, no drift)
+    'uniform float uFadeIn;',      // s, per-point appear fade-in
     'varying vec3 vColor;',
     'varying float vA;',
     'void main(){',
@@ -88,26 +94,32 @@
     '                 aPos.x * uRot.y + aPos.y * uRot.x);',
     '  float x0 = uOrigin.x + rp.x * uScalePx;',
     '  float y0 = uOrigin.y + rp.y * uScalePx;',
+    // Formation: reveal points in charge-weighted time order; the cloud stays
+    // at the vertex (no drift) until fully formed, then drifts as one body.
+    '  float formPhase = clamp(uTime / uFormDur, 0.0, 1.0);',
+    '  float appear = step(aForm, formPhase);',
+    '  float fadeIn = clamp((uTime - aForm * uFormDur) / uFadeIn, 0.0, 1.0);',
+    '  float driftT = max(uTime - uFormDur, 0.0);',
     '  float effD = clamp(uDepthOff + (aDepth - 0.5) * uDepthSpan, 0.0, 1.0);',
     '  float yLand = mix(uFarY, uNearY, effD);',
     '  float valid = step(y0, yLand);',   // spawned past its landing surface: dead
     '  float tArr = max(yLand - y0, 0.0) / uSpeed;',
-    '  float arrived = step(tArr, uTime);',
-    '  float y = y0 + min(uTime, tArr) * uSpeed;',
+    '  float arrived = step(tArr, driftT);',
+    '  float y = y0 + min(driftT, tArr) * uSpeed;',
     '  float x = x0;',                    // charge falls straight down, always
     // Inside the detector? Plane half-width at this landing depth.
     '  float halfW = uNearHalf * mix(uFarScale, 1.0, effD);',
     '  float inside = step(abs(x0 - uCx), halfW);',
-    '  float pre = clamp((uTime - tArr) / uBlend + 1.0, 0.0, 1.0);',
+    '  float pre = clamp((driftT - tArr) / uBlend + 1.0, 0.0, 1.0);',
     '  pre = pre * pre * (3.0 - 2.0 * pre);',
     '  float emph = pow(clamp(aDe, 0.001, 1.0), uEmphPow);',
     '  float eF = mix(1.0, emph, uEmphAmt);',
     '  float aFly = 0.85 * max(eF, 0.03);',
-    '  float dt = uTime - tArr;',
+    '  float dt = driftT - tArr;',
     '  float d1 = 1.0 - clamp(dt / uPlaneFade, 0.0, 1.0);',
     '  float flash = 1.0 + 0.6 * exp(-max(dt, 0.0) * 5.0);',
-    // Outside the detector footprint: never visible at all.
-    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha * uAlphaMul * valid * inside;',
+    // Outside the detector footprint / not yet formed: not drawn.
+    '  float alpha = mix(aFly, aFly * flash * pow(d1, 1.8), arrived) * uAlpha * uAlphaMul * valid * inside * appear * fadeIn;',
     // HSL(hue, 0.78, 0.55): exact port of the viewer's hsl2rgb track colors
     '  vec3 q = clamp(abs(mod(aHue * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);',
     '  vColor = 0.55 + 0.702 * (q - 0.5);',
@@ -307,13 +319,13 @@
   function setupGL() {
     prog = compile(VS, FS);
     pProg = compile(PVS, PFS);
-    ['aPos', 'aDepth', 'aHue', 'aDe'].forEach(function (a) {
+    ['aPos', 'aDepth', 'aForm', 'aHue', 'aDe'].forEach(function (a) {
       loc[a] = gl.getAttribLocation(prog, a);
     });
     ['uVp', 'uScroll', 'uOrigin', 'uScalePx', 'uSpeed', 'uTime', 'uNearY',
      'uFarY', 'uCx', 'uNearHalf', 'uFarScale', 'uPtSize', 'uHitSize', 'uPlaneFade',
      'uAlpha', 'uDepthOff', 'uDepthSpan', 'uBlend', 'uEmphPow', 'uEmphAmt',
-     'uPersp', 'uRot', 'uAlphaMul'].forEach(function (u) {
+     'uPersp', 'uRot', 'uAlphaMul', 'uFormDur', 'uFadeIn'].forEach(function (u) {
       loc[u] = gl.getUniformLocation(prog, u);
     });
     pLoc.aXY = gl.getAttribLocation(pProg, 'aXY');
@@ -360,7 +372,7 @@
     var scalePx = Math.min(window.innerWidth, window.innerHeight) * CLOUD_HALF_W * persp;
     addInstance({ pool: events, idx: evIdx, ox: ox, oy: oy,
                   rot: [1, 0], alphaMul: 1, depthOff: depthOff, persp: persp,
-                  scalePx: scalePx });
+                  scalePx: scalePx, formDur: FORM_S });
   }
 
   function spawnCosmic() {
@@ -381,12 +393,14 @@
     if (oy > plane.farY - 200) oy = Math.max(120, plane.farY - 200);
     addInstance({ pool: cosmics, idx: idx, ox: ox, oy: oy,
                   rot: [Math.cos(ang), Math.sin(ang)], alphaMul: COSMIC_ALPHA,
-                  depthOff: depthOff, persp: persp, scalePx: halfLen });
+                  depthOff: depthOff, persp: persp, scalePx: halfLen,
+                  formDur: COSMIC_FORM_S });
   }
 
   function addInstance(inst) {
     inst.t0 = performance.now();
-    inst.tEnd = (plane.nearY - inst.oy + inst.scalePx) / SPEED + PLANE_FADE + 0.5;
+    inst.tEnd = inst.formDur +
+      (plane.nearY - inst.oy + inst.scalePx) / SPEED + PLANE_FADE + 0.5;
     if (live.length >= MAX_LIVE) live.shift();
     live.push(inst);
   }
@@ -460,11 +474,13 @@
       if (!ev || t > inst.tEnd) { live.splice(j, 1); continue; }
       gl.bindBuffer(gl.ARRAY_BUFFER, ev.vbo);
       gl.vertexAttribPointer(loc.aPos, 2, gl.SHORT, true, 8, 0);
-      gl.vertexAttribPointer(loc.aDepth, 1, gl.UNSIGNED_SHORT, true, 8, 4);
+      gl.vertexAttribPointer(loc.aDepth, 1, gl.UNSIGNED_BYTE, true, 8, 4);
+      gl.vertexAttribPointer(loc.aForm, 1, gl.UNSIGNED_BYTE, true, 8, 5);
       gl.vertexAttribPointer(loc.aHue, 1, gl.UNSIGNED_BYTE, true, 8, 6);
       gl.vertexAttribPointer(loc.aDe, 1, gl.UNSIGNED_BYTE, true, 8, 7);
       gl.enableVertexAttribArray(loc.aPos);
       gl.enableVertexAttribArray(loc.aDepth);
+      gl.enableVertexAttribArray(loc.aForm);
       gl.enableVertexAttribArray(loc.aHue);
       gl.enableVertexAttribArray(loc.aDe);
       gl.uniform2f(loc.uOrigin, inst.ox, inst.oy);
@@ -474,6 +490,8 @@
       gl.uniform1f(loc.uPersp, inst.persp);
       gl.uniform2f(loc.uRot, inst.rot[0], inst.rot[1]);
       gl.uniform1f(loc.uAlphaMul, inst.alphaMul);
+      gl.uniform1f(loc.uFormDur, inst.formDur);
+      gl.uniform1f(loc.uFadeIn, FADE_IN_S);
       gl.drawArrays(gl.POINTS, 0, ev.n);
     }
   }
