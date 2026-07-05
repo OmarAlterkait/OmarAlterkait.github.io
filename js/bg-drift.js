@@ -47,8 +47,8 @@
   var LAND_BLEND = 0.35;     // s, pre-landing ease toward the hit position
   var EMPH_POW = 5.0;        // JAXTPC viewer charge emphasis: de^pow
   var EMPH_AMT = 0.75;       // 0 = uniform, 1 = full emphasis
-  var FORM_S = 0.75;         // interaction formation duration (grows in, no drift)
-  var COSMIC_FORM_S = 0.45;  // cosmic muon draws in faster
+  var FORM_S = 1.05;         // interaction formation duration (grows in, no drift)
+  var COSMIC_FORM_S = 0.65;  // cosmic muon draws in faster
   var FADE_IN_S = 0.10;      // per-point appear fade-in
   var COSMIC_MEAN_S = 9;    // mean seconds between ambient cosmic rays
   var COSMIC_ALPHA = 0.75;   // cosmics dimmer than clicked events
