@@ -346,6 +346,10 @@ main { padding: 0 1.25rem; }
 
 .news-text { flex: 1; }
 
+/* Anthropic-branded link: their terracotta accent (~5.9:1 on this bg) */
+.link-anthropic { color: #d97757; }
+.link-anthropic:hover { color: #e59078; }
+
 /* --- Talks & Presentations ------------------------------------------------- */
 
 .talk-list { list-style: none; }
