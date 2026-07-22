@@ -74,6 +74,12 @@
   </header>
 
   <main>
+    <!-- Open stretch: the background canvas shows through here. The hint is
+         revealed by bg-drift.js only once clicking actually works. -->
+    <div class="bg-window" aria-hidden="true">
+      <span class="bg-hint">Click or tap the open space &mdash; each burst is a simulated neutrino interaction</span>
+    </div>
+
     <section id="about" class="section">
       <h2>About</h2>
       <p>
@@ -91,6 +97,8 @@
         and currently a DOE SCGSR Fellow at SLAC working with Kazuhiro Terao.
       </p>
     </section>
+
+    <div class="bg-window" aria-hidden="true"></div>
 
     <section id="research" class="section">
       <h2>Research</h2>
@@ -206,6 +214,13 @@
         <li><span class="news-date">Aug 2023</span> <span class="tag tag-poster">Poster</span> <span class="news-text">International Neutrino Summer School <span class="loc">&middot; Fermilab, IL</span></span></li>
       </ul>
     </section>
+
+    <!-- Approach space before the sensor plane: clicks here form close to
+         the plane and land quickly, the full lifecycle without scrolling.
+         The label also explains what the wireframe below is. -->
+    <div class="bg-window bg-window-low" aria-hidden="true">
+      <span class="bg-hint bg-hint-keep">Fire one here &mdash; the charge lands on the sensor plane below</span>
+    </div>
 
     <!-- Reserved space for the sensor plane of the background detector.
          Charge from clicked interactions drifts down the page and lands here. -->

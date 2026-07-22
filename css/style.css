@@ -417,6 +417,48 @@ main { padding: 0 1.25rem; }
 
 .contact-block p { font-size: 0.95rem; line-height: 1.9; }
 
+/* --- Background viewing windows ------------------------------------------------ */
+/* Deliberate open stretches between panels where the canvas shows through:
+   click/tap here to fire an interaction and watch it form and drift.
+   clamp() keeps them meaningful on short phone viewports without becoming
+   a void on tall monitors. */
+
+.bg-window {
+  height: clamp(220px, 32vh, 520px);
+  display: flex;
+  /* Hint near the top of the window: with the hero at 88vh a centered hint
+     would sit at ~104vh, below the fold on every desktop viewport. */
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 3.2rem;
+}
+
+/* Approach window before the sensor plane, shorter than the mid-page ones */
+.bg-window-low { height: clamp(140px, 20vh, 380px); }
+
+.bg-hint {
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--text-dim);
+  padding: 0 1rem;
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0;                              /* shown only if clicking works */
+  transition: opacity 1.2s ease 0.4s;
+}
+
+html.bg-live .bg-hint { opacity: 0.75; }   /* bg-drift.js: clicks are armed */
+
+/* First visible burst: the intro hint has served its purpose. Exit fast and
+   without the entrance delay so the caption never lingers over the forming
+   cloud. The plane label (.bg-hint-keep) stays: it names the wireframe. */
+html.bg-used .bg-hint:not(.bg-hint-keep) {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
 /* --- Detector sensor plane space ---------------------------------------------- */
 
 .detector-space {
@@ -455,4 +497,17 @@ main { padding: 0 1.25rem; }
   .news-list li { flex-direction: column; gap: 0.1rem; }
   .talk-list li { gap: 0.6rem; }
   .chip-row { justify-content: center; margin-left: auto; margin-right: auto; }
+  /* Panels are full-width on phones, so these gaps are the only place the
+     animation shows through; keep them real but economize thumb-scrolling.
+     svh fallback: size against the visible viewport while the URL bar shows. */
+  .bg-window { height: clamp(160px, 24vh, 280px); height: clamp(160px, 24svh, 280px); }
+  .bg-window-low { height: clamp(100px, 14vh, 220px); height: clamp(100px, 14svh, 220px); }
+}
+
+/* Short landscape viewports (phones rotated): the portrait floors above only
+   apply under 640px width, so rotated phones would get the desktop 220px
+   floor, over half the screen of empty scroll per gap. */
+@media (max-height: 500px) {
+  .bg-window { height: clamp(120px, 30vh, 180px); padding-top: 2rem; }
+  .bg-window-low { height: clamp(80px, 16vh, 140px); }
 }

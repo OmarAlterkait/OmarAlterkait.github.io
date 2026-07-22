@@ -373,6 +373,7 @@
     addInstance({ pool: events, idx: evIdx, ox: ox, oy: oy,
                   rot: [1, 0], alphaMul: 1, depthOff: depthOff, persp: persp,
                   scalePx: scalePx, formDur: FORM_S });
+    return true;   // a burst was actually spawned (early-outs return undefined)
   }
 
   function spawnCosmic() {
@@ -565,15 +566,36 @@
 
       document.addEventListener('click', function (e) {
         if (e.target.closest('a, button, input, select, textarea, nav')) return;
-        spawn(e.clientX, e.clientY);
+        var shown = spawn(e.clientX, e.clientY);
+        // Dismiss the intro hint only once a click produced a burst the
+        // visitor can actually see: spawned, and not forming behind one of
+        // the near-opaque content panels.
+        if (shown && !e.target.closest('.section, .hero-inner')) {
+          document.documentElement.classList.add('bg-used');
+        }
       });
+      // Clicking works from here on: reveal the .bg-hint caption. Reduced
+      // motion, fetch failure, or no WebGL never reach this line, so the
+      // hint stays hidden whenever it would be a lie.
+      document.documentElement.classList.add('bg-live');
 
       // Ambient cosmic rays (needs the cosmic pool, so not for frugal mode)
       if (!frugal && cosmics.length) scheduleCosmic();
 
-      // Welcome shot so first-time visitors see what the page does
+      // Welcome shot so first-time visitors see what the page does. Aim at
+      // the first open window (clamped into view) instead of a fixed point
+      // that sat behind the hero panel, invisible on phones. Coordinates are
+      // measured at fire time so a scroll during the delay can't skew them.
       setTimeout(function () {
-        spawn(window.innerWidth * 0.62, window.innerHeight * 0.30);
+        var win = document.querySelector('.bg-window');
+        var r = win && win.getBoundingClientRect();
+        var wx = r ? r.left + r.width * 0.5 : window.innerWidth * 0.62;
+        var wy = r ? Math.min(r.top + r.height * 0.5, window.innerHeight * 0.92)
+                   : window.innerHeight * 0.30;
+        // Clamp from above too: an early anchor scroll can carry the window
+        // off the top of the viewport before the shot fires.
+        wy = Math.max(wy, window.innerHeight * 0.12);
+        spawn(wx, wy);
       }, 700);
     })
     .catch(function () { /* background stays plain on any failure */ });
