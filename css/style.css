@@ -327,7 +327,7 @@ main { padding: 0 1.25rem; }
 .news-list li {
   display: flex;
   gap: 1.2rem;
-  padding: 0.55rem 0;
+  padding: 0.35rem 0;
   color: var(--text-dim);
   border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
 }
@@ -354,11 +354,18 @@ main { padding: 0 1.25rem; }
   display: flex;
   align-items: baseline;
   gap: 1rem;
-  padding: 0.5rem 0;
+  padding: 0.35rem 0;
   color: var(--text-dim);
   border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
 }
 .talk-list li:last-child { border-bottom: none; }
+
+/* Two columns on wide screens: talk rows are one-liners there, so the list
+   halves in height and the mid-page stretch without animation shrinks too. */
+@media (min-width: 861px) {
+  .talk-list { columns: 2; column-gap: 2.4rem; }
+  .talk-list li { break-inside: avoid; }
+}
 
 .tag {
   flex-shrink: 0;
@@ -495,7 +502,12 @@ html.bg-used .bg-hint:not(.bg-hint-keep) {
   .icon-row { justify-content: center; }
   .hero-tagline { margin-left: auto; margin-right: auto; }
   .news-list li { flex-direction: column; gap: 0.1rem; }
-  .talk-list li { gap: 0.6rem; }
+  /* Talk rows: date + tags on their own line, text on the next. The desktop
+     single-row flex left ~56px for the text beside the fixed-width date and
+     chips, ballooning every row and overflowing on long words. */
+  .talk-list li { flex-wrap: wrap; gap: 0.25rem 0.6rem; }
+  .talk-list .news-text { flex-basis: 100%; }
+  .tag { width: auto; padding: 0.12rem 0.7rem; }
   .chip-row { justify-content: center; margin-left: auto; margin-right: auto; }
   /* Panels are full-width on phones, so these gaps are the only place the
      animation shows through; keep them real but economize thumb-scrolling.
